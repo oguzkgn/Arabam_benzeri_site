@@ -17,7 +17,7 @@
 ## Dökümantasyon:
 Proje dokümantasyonuna aşağıdaki linklerden erişebilirsiniz:
 
-**1)Gereksinim Analizi**
+**1)[Oğuz Kağan Arısoy'un Gereksinimleri](Gereksinim-Analizi.md)**
 
 **2)REST API Tasarımı**
 
