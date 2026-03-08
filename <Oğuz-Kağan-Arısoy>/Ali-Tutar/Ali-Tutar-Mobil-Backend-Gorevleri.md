@@ -1,4 +1,4 @@
-# Ali Tutar'ın Mobil Backend Görevleri
+# Oğuz Kağan Arısoy'un Mobil Backend Görevleri
 **Mobil Front-end ile Back-end Bağlanmış Test Videosu:** [Link buraya eklenecek](https://example.com)
 
 ## 1. Üye Olma (Kayıt) Servisi
