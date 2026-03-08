@@ -6,7 +6,7 @@ Bu dokümanda, mobil uygulamanın kullanıcı arayüzü (UI) ve kullanıcı dene
 
 ## Grup Üyelerinin Mobil Frontend Görevleri
 
-1. [Oğuz Kağan Arısoy'un Mobil Frontend Görevleri](Oğuz-Kağan-Arısoy/Oğuz-Kağan-Arısoy-Mobil-Frontend-Gorevleri.md)
+1. [Oğuz Kağan Arısoy'un Mobil Frontend Görevleri](Oğuz-Kağan-Arısoy/Oğuz-Kağan-Arısoy-Frontend-Gorevleri.md)
 
 ---
 
