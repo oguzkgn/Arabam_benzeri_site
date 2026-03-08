@@ -21,4 +21,4 @@
 
 # Gereksinim Dağılımları
 
-[Oğuz Kağan Arısoy'un gereksinimleri](Oğuz-Kağan-Arısoy-Gereksinimler.md)
+[Oğuz Kağan Arısoy'un gereksinimleri](Oğuz-Kağan-Arısoy/Oğuz-Kağan-Arısoy-Gereksinimler.md)
