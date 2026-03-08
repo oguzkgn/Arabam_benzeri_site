@@ -10,7 +10,7 @@
 
 ## Proje Linkleri:
 
-## Proje Ekibi: 
+## Proje Ekibi: Oğuz Kağan Arısoy
 ### Grup Adı: 32Bit Garage
 ### Ekip Üyeleri: Oğuz Kağan Arısoy
 
