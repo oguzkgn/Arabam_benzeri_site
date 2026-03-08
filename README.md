@@ -19,7 +19,7 @@ Proje dokümantasyonuna aşağıdaki linklerden erişebilirsiniz:
 
 **1)[Oğuz Kağan Arısoy'un Gereksinimleri](Gereksinim-Analizi.md)**
 
-**2)REST API Tasarımı**
+**2)[Oğuz Kağan Arısoy'un REST API Tasarımı](API-Tasarimi.md)**
 
 **3)REST API**
 
