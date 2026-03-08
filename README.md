@@ -1,5 +1,8 @@
 # Arabam_benzeri_site
 
+<img width="2750" height="1536" alt="Product" src="https://github.com/user-attachments/assets/90d658a3-5ad4-46e9-bc98-684e423ceab3" />
+
+
 ## Proje Tanımı: Ulusal çapta hizmet veren büyük ilan siteleri (Sahibinden, Arabam vb.), yerel bir öğrencinin veya Isparta'da yaşayan birinin hızlıca sonuca ulaşması için fazla karmaşıktır. 32Bit Garage, "İl/İlçe" gibi geniş filtreler yerine doğrudan Isparta'nın öğrenci ve yaşam dinamiklerine (Çünür, Fatih Mahallesi, Iyaş Bölgesi vb.) odaklanır.
 
 **Amacımız;** kampüs içindeki veya aynı şehirdeki alıcı ve satıcıları hızlıca buluşturan, gereksiz özelliklerden arındırılmış, sadece amaca hizmet eden (işlevsel) ve güven odaklı kapalı bir pazar yeri oluşturmaktır.
