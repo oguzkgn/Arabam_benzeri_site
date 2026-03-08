@@ -8,7 +8,7 @@ Bu dokümanda, mobil uygulamanın REST API ile iletişimini sağlayan backend en
 
 ## Grup Üyelerinin Mobil Backend Görevleri
 
-1. [Oğuz Kağan Arısoy'un Mobil Backend Görevleri](Oğuz-Kağan-Arısoy/Oğuz-Kağan-Arısoy-Mobil-Backend-Gorevleri.md)
+1. [Oğuz Kağan Arısoy'un Mobil Backend Görevleri](Mobil-Backend-Gorevleri.md)
 
 
 ## Genel Mobil Backend Prensipleri
