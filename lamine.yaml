@@ -14,13 +14,17 @@ info:
   contact:
     name: 32Bit Garage Destek Ekibi
     email: api-support@32bitgarage.com
-
+    url: https://api.32bitgarage.com/support
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
 servers:
   - url: https://api.32bitgarage.com/v1
     description: Production server
+  - url: https://staging-api.32bitgarage.com/v1
+    description: Staging server
   - url: http://localhost:5000/api
     description: Development server
-
 tags:
   - name: auth
     description: Kimlik doğrulama işlemleri
@@ -30,7 +34,6 @@ tags:
     description: İlan favoriye ekleme/çıkarma işlemleri
   - name: users
     description: Kullanıcı profili işlemleri
-
 paths:
   /auth/register:
     post:
@@ -45,6 +48,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UserRegistration'
+            examples:
+              example1:
+                summary: Örnek öğrenci kaydı
+                value:
+                  email: ogrenci@sdu.edu.tr
+                  password: GuvenliSifre32!
+                  firstName: Mehmet
+                  lastName: Yılmaz
+                  phone: "+905551234567"
       responses:
         '201':
           description: Kullanıcı başarıyla oluşturuldu
@@ -54,6 +66,12 @@ paths:
                 $ref: '#/components/schemas/User'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Email adresi zaten kullanımda
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /auth/login:
     post:
@@ -90,9 +108,10 @@ paths:
         - $ref: '#/components/parameters/LimitParam'
         - name: mahalle
           in: query
-          description: İsparta içi mahalle filtresi (Örn. Çünür)
+          description: Isparta içi mahalle filtresi
           schema:
             type: string
+            example: "Çünür"
       responses:
         '200':
           description: Başarılı
@@ -115,6 +134,14 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/AdCreate'
+            examples:
+              example1:
+                summary: Örnek Motosiklet İlanı
+                value:
+                  title: "Sahibinden Temiz Yamaha MT-07"
+                  description: "2020 model, kazasız, tüm bakımları serviste yapıldı. SDU öğrencisinden satılık."
+                  price: 245000.00
+                  mahalle: "Çünür"
       responses:
         '201':
           description: İlan başarıyla oluşturuldu
@@ -147,6 +174,12 @@ paths:
       responses:
         '200':
           description: İlan başarıyla güncellendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ad'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -195,9 +228,12 @@ paths:
                 adId:
                   type: string
                   format: uuid
+                  example: "a1b2c3d4-e5f6-7890-1234-56789abcdef0"
       responses:
         '201':
-          description: İlan favorilere eklendi
+          description: İlan favorilere başarıyla eklendi
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
 
@@ -214,7 +250,7 @@ paths:
         - $ref: '#/components/parameters/AdIdParam'
       responses:
         '204':
-          description: Favorilerden başarıyla çıkarıldı
+          description: İlan favorilerden başarıyla çıkarıldı
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -244,16 +280,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
     delete:
       tags:
         - users
       summary: 10. Kullanıcı Hesabını Silme
-      description: Kullanıcıyı ve ona ait tüm verileri sistemden siler.
+      description: Kullanıcıyı ve ona ait tüm verileri sistemden kalıcı olarak siler.
       operationId: deleteUser
       security:
         - bearerAuth: []
@@ -266,6 +306,8 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
 components:
   securitySchemes:
@@ -284,6 +326,7 @@ components:
       schema:
         type: string
         format: uuid
+        example: "123e4567-e89b-12d3-a456-426614174000"
         
     AdIdParam:
       name: adId
@@ -293,6 +336,7 @@ components:
       schema:
         type: string
         format: uuid
+        example: "a1b2c3d4-e5f6-7890-1234-56789abcdef0"
         
     PageParam:
       name: page
@@ -302,16 +346,18 @@ components:
         type: integer
         minimum: 1
         default: 1
+        example: 1
         
     LimitParam:
       name: limit
       in: query
-      description: Sayfa başına kayıt sayısı
+      description: Sayfa başına ilan sayısı
       schema:
         type: integer
         minimum: 1
         maximum: 50
         default: 20
+        example: 20
 
   schemas:
     User:
@@ -321,19 +367,35 @@ components:
         - email
         - firstName
         - lastName
+        - createdAt
       properties:
         id:
           type: string
           format: uuid
+          description: Kullanıcı benzersiz kimliği
+          example: "123e4567-e89b-12d3-a456-426614174000"
         email:
           type: string
           format: email
+          description: Kullanıcı email adresi
+          example: "ogrenci@sdu.edu.tr"
         firstName:
           type: string
+          description: Ad
+          example: "Mehmet"
         lastName:
           type: string
+          description: Soyad
+          example: "Yılmaz"
         phone:
           type: string
+          description: Telefon numarası
+          example: "+905551234567"
+        createdAt:
+          type: string
+          format: date-time
+          description: Kayıt tarihi
+          example: "2024-03-09T10:30:00Z"
 
     UserRegistration:
       type: object
@@ -346,16 +408,43 @@ components:
         email:
           type: string
           format: email
+          example: "ogrenci@sdu.edu.tr"
         password:
           type: string
           format: password
           minLength: 6
+          example: "GuvenliSifre32!"
         firstName:
           type: string
+          minLength: 2
+          example: "Mehmet"
         lastName:
           type: string
+          minLength: 2
+          example: "Yılmaz"
         phone:
           type: string
+          example: "+905551234567"
+
+    UserUpdate:
+      type: object
+      properties:
+        firstName:
+          type: string
+          minLength: 2
+          example: "Mehmet Can"
+        lastName:
+          type: string
+          minLength: 2
+          example: "Yılmaz"
+        phone:
+          type: string
+          example: "+905559876543"
+        password:
+          type: string
+          format: password
+          minLength: 6
+          example: "YeniSifre32!"
 
     LoginCredentials:
       type: object
@@ -366,34 +455,29 @@ components:
         email:
           type: string
           format: email
+          example: "ogrenci@sdu.edu.tr"
         password:
           type: string
           format: password
+          example: "GuvenliSifre32!"
 
     AuthToken:
       type: object
       required:
         - token
+        - expiresIn
+        - user
       properties:
         token:
           type: string
+          description: JWT access token
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
         expiresIn:
           type: integer
+          description: Token geçerlilik süresi (saniye)
+          example: 86400
         user:
           $ref: '#/components/schemas/User'
-
-    UserUpdate:
-      type: object
-      properties:
-        firstName:
-          type: string
-        lastName:
-          type: string
-        phone:
-          type: string
-        password:
-          type: string
-          format: password
 
     Ad:
       type: object
@@ -402,24 +486,45 @@ components:
         - title
         - price
         - mahalle
+        - userId
+        - createdAt
       properties:
         id:
           type: string
           format: uuid
+          example: "a1b2c3d4-e5f6-7890-1234-56789abcdef0"
+        userId:
+          type: string
+          format: uuid
+          description: İlanı veren kullanıcının ID'si
+          example: "123e4567-e89b-12d3-a456-426614174000"
         title:
           type: string
-          example: "Sahibinden Temiz Motosiklet"
+          description: İlan başlığı
+          example: "Sahibinden Temiz Yamaha MT-07"
         description:
           type: string
+          description: İlan açıklaması
+          example: "2020 model, kazasız, tüm bakımları serviste yapıldı. SDU öğrencisinden satılık."
         price:
           type: number
           format: float
+          description: İlan fiyatı (TL)
+          example: 245000.00
         mahalle:
           type: string
+          description: Isparta içi mahalle
           example: "Çünür"
         createdAt:
           type: string
           format: date-time
+          description: İlan verilme tarihi
+          example: "2024-03-09T14:45:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: İlan güncellenme tarihi
+          example: "2024-03-09T14:45:00Z"
 
     AdCreate:
       type: object
@@ -430,11 +535,13 @@ components:
       properties:
         title:
           type: string
+          minLength: 5
         description:
           type: string
         price:
           type: number
           format: float
+          minimum: 0
         mahalle:
           type: string
 
@@ -443,13 +550,19 @@ components:
       properties:
         title:
           type: string
+          minLength: 5
+          example: "Acil Satılık Yamaha MT-07"
         description:
           type: string
+          example: "Fiyat düştü, acil nakit ihtiyacından satılık."
         price:
           type: number
           format: float
+          minimum: 0
+          example: 235000.00
         mahalle:
           type: string
+          example: "Çünür"
 
     AdList:
       type: object
@@ -459,22 +572,54 @@ components:
           items:
             $ref: '#/components/schemas/Ad'
         pagination:
-          type: object
-          properties:
-            page:
-              type: integer
-            totalPages:
-              type: integer
+          $ref: '#/components/schemas/Pagination'
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Mevcut sayfa
+          example: 1
+        limit:
+          type: integer
+          description: Sayfa başına kayıt
+          example: 20
+        totalPages:
+          type: integer
+          description: Toplam sayfa sayısı
+          example: 3
+        totalItems:
+          type: integer
+          description: Toplam kayıt sayısı
+          example: 45
 
     Error:
       type: object
       required:
+        - code
         - message
       properties:
         code:
           type: string
+          description: Hata kodu
+          example: "VALIDATION_ERROR"
         message:
           type: string
+          description: Hata mesajı
+          example: "İstek parametreleri geçersiz."
+        details:
+          type: array
+          description: Detaylı hata bilgileri
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                example: "price"
+              message:
+                type: string
+                example: "Fiyat 0'dan büyük olmalıdır."
 
   responses:
     BadRequest:
@@ -483,21 +628,36 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+          example:
+            code: "BAD_REQUEST"
+            message: "Gerekli alanlar eksik veya format hatalı."
+            
     Unauthorized:
       description: Yetkisiz erişim (Token eksik veya geçersiz)
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+          example:
+            code: "UNAUTHORIZED"
+            message: "Bu işlem için oturum açmanız gerekmektedir."
+            
     Forbidden:
       description: Erişim reddedildi (Bu işlem için yetki yok)
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+          example:
+            code: "FORBIDDEN"
+            message: "Başka bir kullanıcının ilanını silemezsiniz/güncelleyemezsiniz."
+            
     NotFound:
       description: İstenen kaynak bulunamadı
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+          example:
+            code: "NOT_FOUND"
+            message: "İlan veya kullanıcı bulunamadı."
