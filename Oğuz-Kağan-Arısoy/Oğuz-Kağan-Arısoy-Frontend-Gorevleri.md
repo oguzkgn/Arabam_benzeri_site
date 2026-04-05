@@ -5,6 +5,12 @@
 
 [Render Adres](https://arabam-benzeri-site.onrender.com) 
 
+render adresine:
+
+/api/arabalar
+
+eklersek renderin doğru çalıştığını görebiliriz
+
 ## 1. Üye Olma (Kayıt) Ekranı
 - **API Endpoint:** `POST /auth/register`
 - **Görev:** Kullanıcı kayıt işlemi için mobil ekran tasarımı ve implementasyonu
