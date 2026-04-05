@@ -1,5 +1,5 @@
 # Oğuz Kağan Arısoy'un Web Frontend Görevleri
-**Front-end Test Videosu:** [Link buraya eklenecek](https://example.com)
+**Front-end Test Videosu:** [Link](https://youtu.be/R94exoo6X5A)
 
 ## 1. Üye Olma (Kayıt) Sayfası
 - **API Endpoint:** `POST /auth/register`
