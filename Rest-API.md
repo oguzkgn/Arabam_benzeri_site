@@ -1,6 +1,6 @@
 # REST API Görev Dağılımı
 
-**REST API Adresi:** [api.32birgarage.com][https://arabam-benzeri-site.onrender.com]
+**REST API Adresi:** https://arabam-benzeri-site.onrender.com
 
 Bu dokümanda, proje ekibindeki her üyenin geliştirmekten sorumlu olduğu REST API metotları listelenmektedir.
 
