@@ -1,5 +1,7 @@
 # Oğuz Kağan Arısoy'un Mobil Frontend Görevleri
-**Mobile Front-end Demo Videosu:** [32BitGarage](https://youtu.be/R94exoo6X5A)
+**Mobile Front-end Demo Videosu:** [32BitGarageYoutube](https://youtu.be/R94exoo6X5A)
+
+**Site Linki** [32BitGarage](https://32bit-garage-auwh4803q-oguzkgns-projects.vercel.app/)
 
 ## 1. Üye Olma (Kayıt) Ekranı
 - **API Endpoint:** `POST /auth/register`
