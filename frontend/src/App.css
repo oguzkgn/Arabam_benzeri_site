@@ -1,0 +1,232 @@
+/* --- GENEL AYARLAR --- */
+* {
+  box-sizing: border-box; /* Bütün kutuların dışa taşmasını engeller */
+}
+
+.App { 
+  text-align: center; 
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+  background-color: #f0f2f5; 
+  min-height: 100vh; 
+  padding-bottom: 50px; 
+}
+
+/* --- HEADER TASARIMI (Senin Renklerin) --- */
+.header { 
+  background-color: #1c1e21; 
+  color: #f2ba1d; 
+  padding: 20px 30px; 
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.header h1 { margin: 0; font-size: 2rem; }
+.user-info { display: flex; align-items: center; gap: 15px; }
+
+.login-btn { background: #f2ba1d; color: #1c1e21; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+.login-btn:hover { background: #d4a317; }
+.logout-btn { background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+.logout-btn:hover { background: #c0392b; }
+
+.ayirici { margin: 40px auto; width: 80%; border: 1px solid #ddd; }
+
+/* --- GİRİŞ / KAYIT FORMU --- */
+.auth-box { 
+  max-width: 450px; 
+  margin: 40px auto; 
+  padding: 30px; 
+  border-radius: 10px; 
+  background: #fff; 
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+}
+.auth-box h2 { margin-top: 0; color: #333; margin-bottom: 20px; }
+.auth-box form { display: flex; flex-direction: column; gap: 15px; }
+.auth-box input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; background-color: #fafafa; }
+.auth-toggle { color: #3498db; cursor: pointer; margin-top: 15px; font-size: 1rem; font-weight: bold; text-decoration: underline; }
+
+/* --- YENİ İLAN FORMU (HİZALAMA BURADA DÜZELTİLDİ) --- */
+.form-kapsayici { 
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.ilan-ekleme-alani {
+  background: white; 
+  width: 100%; 
+  max-width: 800px; 
+  padding: 30px; 
+  border-radius: 10px; 
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+}
+.ilan-ekleme-alani h2 { margin-top: 0; margin-bottom: 25px; color: #333; }
+
+.ilan-formu { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; /* İki eşit sütun */
+  gap: 15px; 
+}
+
+/* Tüm input ve select (açılır menü) kutuları tamamen aynı boyutta olacak */
+.ilan-formu input, 
+.ilan-formu select { 
+  width: 100%; 
+  padding: 12px; 
+  border: 1px solid #ccc; 
+  border-radius: 5px; 
+  font-size: 1rem; 
+  background-color: #fafafa;
+  font-family: inherit;
+}
+
+/* Tam satır kaplaması gereken elemanlar (Dosya, Butonlar vb.) */
+.ilan-formu input[type="file"],
+.ilan-formu .kaydet-btn,
+.ilan-formu .iptal-btn {
+  grid-column: span 2;
+  width: 100%;
+}
+
+.kaydet-btn { 
+  padding: 15px; 
+  background-color: #f2ba1d; 
+  color: #1c1e21; 
+  font-weight: bold; 
+  font-size: 1.2rem; 
+  border: none; 
+  border-radius: 5px; 
+  cursor: pointer; 
+  transition: 0.3s; 
+  margin-top: 10px;
+}
+.kaydet-btn:hover { background-color: #d4a317; }
+
+.iptal-btn { 
+  padding: 12px; 
+  background-color: #95a5a6; 
+  color: white; 
+  border: none; 
+  border-radius: 5px; 
+  cursor: pointer; 
+  font-weight: bold; 
+  font-size: 1rem;
+}
+.iptal-btn:hover { background-color: #7f8c8d; }
+
+/* --- İLAN LİSTESİ VE KART TASARIMLARI --- */
+.ilan-listesi-konteynir h2 {
+  font-size: 2.2rem;
+  color: #1c1e21;
+}
+
+.liste-grid { 
+  display: flex; 
+  flex-wrap: wrap; 
+  justify-content: center; 
+  gap: 25px; 
+  padding: 20px 0;
+}
+
+.araba-kart-konteynir { 
+  background: white; 
+  border-radius: 10px; 
+  width: 320px; 
+  min-width: 320px; 
+  max-width: 320px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+  border-top: 5px solid #f2ba1d; /* Senin özel tasarımın */
+  display: flex; 
+  flex-direction: column; 
+  overflow: hidden; 
+  transition: transform 0.2s ease, box-shadow 0.2s ease; 
+}
+.araba-kart-konteynir:hover { 
+  transform: translateY(-5px); 
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15); 
+}
+
+/* Resim Alanı */
+.araba-kart-resim-alani { 
+  width: 100%; 
+  height: 220px; 
+  background-color: #eee; 
+  border-bottom: 1px solid #ddd;
+}
+.araba-kart-resim { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover; /* Resmi sündürmeden sığdırır */
+  display: block; 
+}
+.resim-yok-alani { 
+  width: 100%; 
+  height: 100%; 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  color: #999; 
+  font-style: italic; 
+}
+
+/* Kart İçi Bilgiler */
+.kart-bilgi { 
+  padding: 20px; 
+  text-align: left; 
+  display: flex; 
+  flex-direction: column; 
+  flex-grow: 1; 
+}
+.kart-bilgi h3 { margin: 0 0 10px 0; color: #1c1e21; font-size: 1.4rem; }
+.kart-bilgi .fiyat { color: #2ecc71; font-weight: bold; font-size: 1.6rem; margin: 10px 0; }
+.kart-bilgi p { margin: 5px 0; color: #555; font-size: 0.95rem; }
+
+/* Düzenle ve Sil Butonları */
+.kart-butonlar { 
+  display: flex; 
+  justify-content: space-between; 
+  gap: 10px;
+  margin-top: auto; 
+  padding-top: 15px; 
+  border-top: 1px solid #eee; 
+}
+.btn-duzenle { 
+  background-color: #3498db; 
+  color: white; 
+  border: none; 
+  padding: 10px; 
+  border-radius: 5px; 
+  cursor: pointer; 
+  transition: 0.2s; 
+  flex: 1; 
+  font-weight: bold;
+}
+.btn-duzenle:hover { background-color: #2980b9; }
+
+.btn-sil { 
+  background-color: #e74c3c; 
+  color: white; 
+  border: none; 
+  padding: 10px; 
+  border-radius: 5px; 
+  cursor: pointer; 
+  transition: 0.2s; 
+  flex: 1; 
+  font-weight: bold;
+}
+.btn-sil:hover { background-color: #c0392b; }
+
+/* --- MOBİL UYUM (TELEFON EKRANLARI İÇİN) --- */
+@media (max-width: 768px) {
+  .header { flex-direction: column; gap: 15px; text-align: center; }
+  
+  /* Telefondan girilince form kutuları yan yana değil, alt alta dizilsin */
+  .ilan-formu { grid-template-columns: 1fr; }
+  .ilan-formu input[type="file"], 
+  .ilan-formu .kaydet-btn, 
+  .ilan-formu .iptal-btn { grid-column: span 1; }
+  
+  .ilan-ekleme-alani { padding: 20px; }
+  .araba-kart-konteynir { width: 100%; min-width: 100%; max-width: 100%; }
+}
