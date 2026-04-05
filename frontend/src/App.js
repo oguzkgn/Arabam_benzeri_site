@@ -2,6 +2,35 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
 
+// --- ISPARTA YEREL KONUMLAR LİSTESİ ---
+const ISPARTA_KONUMLAR = [
+  "⭐ Çünür (Kampüs Bölgesi)",
+  "⭐ İyaş Bölgesi",
+  "⭐ Yedişehitler",
+  "⭐ Modernevler",
+  "⭐ Bahçelievler",
+  "⭐ Çarşı / Merkez",
+  "⭐ Fatih Mahallesi",
+  "Hızırbey",
+  "Yayla Mahallesi",
+  "Binbirevler",
+  "Dere Mahallesi",
+  "Gülcü",
+  "Halıkent",
+  "Işıkkent",
+  "Karaağaç",
+  "Vatan Mahallesi",
+  "Eğirdir",
+  "Yalvaç",
+  "Gönen",
+  "Atabey",
+  "Keçiborlu",
+  "Şarkikaraağaç",
+  "Senirkent",
+  "Uluborlu",
+  "Sütçüler"
+];
+
 function App() {
   const [arabalar, setArabalar] = useState([]);
   const [duzenlenenId, setDuzenlenenId] = useState(null);
@@ -9,17 +38,32 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [authMode, setAuthMode] = useState('login'); 
-  const [profileMode, setProfileMode] = useState(false); // Profil düzenleme ekranı kontrolü
-  const [favoriler, setFavoriler] = useState([]); // Favori ilan ID'leri
-  const [sadeceFavoriler, setSadeceFavoriler] = useState(false); // Filtreleme için
+  const [profileMode, setProfileMode] = useState(false); 
+  const [favoriler, setFavoriler] = useState([]); 
+  const [sadeceFavoriler, setSadeceFavoriler] = useState(false); 
 
-  const [authData, setAuthData] = useState({ adSoyad: '', email: '', sifre: '' });
-  const [yeniIlan, setYeniIlan] = useState({
-    marka: '', seri: '', model: '', yil: '', kilometre: '',
-    vites: '', yakit: '', kasaTipi: '', fiyat: '', aciklama: ''
+  const API_URL = "https://arabam-benzeri-site.onrender.com";
+
+  const [authData, setAuthData] = useState({ 
+    adSoyad: '', 
+    email: '', 
+    sifre: '', 
+    eskiSifre: '', 
+    yeniSifre: '' 
   });
 
-  const [filtreler, setFiltreler] = useState({ vites: '', yakit: '', kasaTipi: '', minFiyat: '', maxFiyat: '', maxKm: '' });
+  const [yeniIlan, setYeniIlan] = useState({
+    marka: '', seri: '', model: '', yil: '', kilometre: '',
+    vites: '', yakit: '', kasaTipi: '', fiyat: '', aciklama: '',
+    konum: '' // Konum state'e eklendi
+  });
+
+  const [filtreler, setFiltreler] = useState({ 
+    vites: '', yakit: '', kasaTipi: '', 
+    minFiyat: '', maxFiyat: '', maxKm: '',
+    konum: '' // Filtreleme için konum eklendi
+  });
+  
   const [siralama, setSiralama] = useState('enYeni');
 
   useEffect(() => {
@@ -29,13 +73,12 @@ function App() {
       setUser(JSON.parse(savedUser));
       setIsLoggedIn(true);
     }
-    // Favorileri tarayıcıdan çek
     const savedFavs = JSON.parse(localStorage.getItem('favoriler')) || [];
     setFavoriler(savedFavs);
   }, []);
 
   const tumIlanlariGetir = () => {
-    axios.get('http://localhost:5000/api/arabalar')
+    axios.get(`${API_URL}/api/arabalar`)
       .then(res => setArabalar(res.data))
       .catch(err => console.error("Veri çekme hatası:", err));
   };
@@ -43,13 +86,14 @@ function App() {
   const handleAuthSubmit = (e) => {
     e.preventDefault();
     const url = authMode === 'login' ? '/api/auth/login' : '/api/auth/register';
-    axios.post(`http://localhost:5000${url}`, authData)
+    axios.post(`${API_URL}${url}`, authData)
       .then(res => {
         if (authMode === 'login') {
           localStorage.setItem('token', res.data.token);
           localStorage.setItem('user', JSON.stringify(res.data.kullanici));
           setUser(res.data.kullanici);
           setIsLoggedIn(true);
+          setAuthData({ adSoyad: '', email: '', sifre: '', eskiSifre: '', yeniSifre: '' });
         } else {
           alert("Kayıt başarılı! Şimdi giriş yap.");
           setAuthMode('login');
@@ -57,22 +101,28 @@ function App() {
       }).catch(err => alert(err.response?.data?.mesaj || "Hata!"));
   };
 
-  // --- YENİ: PROFİL GÜNCELLEME ---
   const handleUpdateProfile = (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
-    axios.put(`http://localhost:5000/api/auth/update`, authData, { headers: { 'x-auth-token': token } })
+    const payload = {
+      adSoyad: authData.adSoyad,
+      eskiSifre: authData.eskiSifre,
+      yeniSifre: authData.yeniSifre
+    };
+
+    axios.put(`${API_URL}/api/auth/update`, payload, { 
+      headers: { 'x-auth-token': token } 
+    })
       .then(res => {
-        alert("Bilgileriniz güncellendi. Lütfen tekrar giriş yapın.");
+        alert(res.data.mesaj || "Profil güncellendi. Güvenlik için tekrar giriş yapın.");
         handleLogout();
-      }).catch(err => alert("Güncelleme hatası!"));
+      }).catch(err => alert(err.response?.data?.mesaj || "Güncelleme hatası!"));
   };
 
-  // --- YENİ: HESAP SİLME ---
   const handleAccountDelete = () => {
     if (window.confirm("Hesabınızı ve tüm ilanlarınızı kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz!")) {
       const token = localStorage.getItem('token');
-      axios.delete(`http://localhost:5000/api/auth/delete`, { headers: { 'x-auth-token': token } })
+      axios.delete(`${API_URL}/api/auth/delete`, { headers: { 'x-auth-token': token } })
         .then(() => {
           alert("Hesabınız silindi.");
           handleLogout();
@@ -80,7 +130,6 @@ function App() {
     }
   };
 
-  // --- YENİ: FAVORİ EKLEME / ÇIKARMA ---
   const toggleFavori = (id) => {
     let yeniFavoriler = [...favoriler];
     if (yeniFavoriler.includes(id)) {
@@ -113,40 +162,40 @@ function App() {
       }
     }
     const method = duzenlenenId ? 'put' : 'post';
-    const url = `http://localhost:5000/api/arabalar${duzenlenenId ? '/' + duzenlenenId : ''}`;
+    const url = `${API_URL}/api/arabalar${duzenlenenId ? '/' + duzenlenenId : ''}`;
     axios[method](url, formData, { headers: { 'x-auth-token': token } })
       .then(() => {
         alert("İşlem Başarılı!");
         tumIlanlariGetir();
         formSifirla();
       })
-      .catch(err => alert(err.response?.data?.mesaj || "Yetkiniz yok!"));
+      .catch(err => alert(err.response?.data?.mesaj || "İşlem başarısız!"));
   };
 
   const ilanSil = (id) => {
     if (window.confirm("Bu ilanı silmek istediğine emin misin?")) {
-      axios.delete(`http://localhost:5000/api/arabalar/${id}`, {
+      axios.delete(`${API_URL}/api/arabalar/${id}`, {
         headers: { 'x-auth-token': localStorage.getItem('token') }
       }).then(() => tumIlanlariGetir()).catch(err => alert("Silme yetkiniz yok!"));
     }
   };
 
   const formSifirla = () => {
-    setYeniIlan({ marka: '', seri: '', model: '', yil: '', kilometre: '', vites: '', yakit: '', kasaTipi: '', fiyat: '', aciklama: '' });
+    setYeniIlan({ marka: '', seri: '', model: '', yil: '', kilometre: '', vites: '', yakit: '', kasaTipi: '', fiyat: '', aciklama: '', konum: '' });
     setResimDosyalari([]); 
     setDuzenlenenId(null);
     const fileInput = document.getElementById('resim-input');
     if(fileInput) fileInput.value = '';
   };
 
-  // --- AKILLI FİLTRELEME MOTORU ---
+  // --- AKILLI FİLTRELEME MOTORU (KONUM DAHİL) ---
   let islenenArabalar = [...arabalar];
   if (filtreler.vites) islenenArabalar = islenenArabalar.filter(a => a.vites === filtreler.vites);
   if (filtreler.yakit) islenenArabalar = islenenArabalar.filter(a => a.yakit.toLowerCase().includes(filtreler.yakit.toLowerCase()));
   if (filtreler.kasaTipi) islenenArabalar = islenenArabalar.filter(a => a.kasaTipi === filtreler.kasaTipi);
   if (filtreler.maxKm) islenenArabalar = islenenArabalar.filter(a => Number(a.kilometre) <= Number(filtreler.maxKm));
-  if (filtreler.minFiyat) islenenArabalar = islenenArabalar.filter(a => Number(a.fiyat) >= Number(filtreler.minFiyat));
   if (filtreler.maxFiyat) islenenArabalar = islenenArabalar.filter(a => Number(a.fiyat) <= Number(filtreler.maxFiyat));
+  if (filtreler.konum) islenenArabalar = islenenArabalar.filter(a => a.konum === filtreler.konum); // Konum filtresi
   if (sadeceFavoriler) islenenArabalar = islenenArabalar.filter(a => favoriler.includes(a._id));
 
   islenenArabalar.sort((a, b) => {
@@ -164,8 +213,8 @@ function App() {
         <div className="user-info">
           {isLoggedIn ? (
             <div className="nav-btns">
-              <button onClick={() => {setSadeceFavoriler(!sadeceFavoriler); setProfileMode(false)}} className={sadeceFavoriler ? "fav-active" : ""}>Favorilerim ❤️</button>
-              <button onClick={() => {setProfileMode(!profileMode); setSadeceFavoriler(false)}}>Profilim 👤</button>
+              <button onClick={() => {setSadeceFavoriler(!sadeceFavoriler); setProfileMode(false)}} className={sadeceFavoriler ? "fav-active" : ""}>Favoriler ❤️</button>
+              <button onClick={() => {setProfileMode(!profileMode); setSadeceFavoriler(false); setAuthData({adSoyad:'', email:'', sifre:'', eskiSifre:'', yeniSifre:''})}}>Profilim 👤</button>
               <button onClick={handleLogout} className="logout-btn">Çıkış</button>
             </div>
           ) : (
@@ -174,17 +223,20 @@ function App() {
         </div>
       </header>
 
-      {/* PROFİL AYARLARI EKRANI */}
       {isLoggedIn && profileMode && (
         <div className="form-kapsayici">
           <div className="auth-box profile-box">
             <h2>Profil Ayarlarım</h2>
             <form onSubmit={handleUpdateProfile}>
-              <input type="text" placeholder="Yeni Ad Soyad" onChange={e => setAuthData({...authData, adSoyad: e.target.value})} required />
-              <input type="password" placeholder="Yeni Şifre" onChange={e => setAuthData({...authData, sifre: e.target.value})} required />
-              <button type="submit" className="kaydet-btn">Bilgileri Güncelle</button>
+              <p style={{fontSize: '12px', color: 'gray', marginBottom: '10px'}}>Sadece değiştirmek istediğiniz alanı doldurun.</p>
+              <input type="text" placeholder={`Yeni Ad Soyad (Mevcut: ${user?.adSoyad})`} onChange={e => setAuthData({...authData, adSoyad: e.target.value})} />
+              <input type="password" placeholder="Yeni Şifre" onChange={e => setAuthData({...authData, yeniSifre: e.target.value})} />
+              <hr style={{margin: '15px 0', border: 'none', borderTop: '1px solid #ddd'}} />
+              <p style={{color: '#d9534f', fontSize: '13px', fontWeight: 'bold'}}>Onay için mevcut şifrenizi girin:</p>
+              <input type="password" placeholder="Eski Şifre (Zorunlu)" onChange={e => setAuthData({...authData, eskiSifre: e.target.value})} required />
+              <button type="submit" className="kaydet-btn">Değişiklikleri Uygula</button>
             </form>
-            <button onClick={handleAccountDelete} className="delete-acc-btn">Hesabımı Sil</button>
+            <button onClick={handleAccountDelete} className="delete-acc-btn">Hesabımı Kalıcı Olarak Sil</button>
             <button onClick={() => setProfileMode(false)} className="iptal-btn">Kapat</button>
           </div>
         </div>
@@ -196,10 +248,10 @@ function App() {
             <h2>{authMode === 'login' ? 'Giriş Yap' : 'Üye Ol'}</h2>
             <form onSubmit={handleAuthSubmit}>
               {authMode === 'register' && (
-                <input type="text" placeholder="Ad Soyad" onChange={e => setAuthData({...authData, adSoyad: e.target.value})} required />
+                <input type="text" placeholder="Ad Soyad" value={authData.adSoyad} onChange={e => setAuthData({...authData, adSoyad: e.target.value})} required />
               )}
-              <input type="email" placeholder="E-posta" onChange={e => setAuthData({...authData, email: e.target.value})} required />
-              <input type="password" placeholder="Şifre" onChange={e => setAuthData({...authData, sifre: e.target.value})} required />
+              <input type="email" placeholder="E-posta" value={authData.email} onChange={e => setAuthData({...authData, email: e.target.value})} required />
+              <input type="password" placeholder="Şifre" value={authData.sifre} onChange={e => setAuthData({...authData, sifre: e.target.value})} required />
               <button type="submit" className="kaydet-btn">{authMode === 'login' ? 'Giriş' : 'Kayıt'}</button>
             </form>
             <p className="auth-toggle" onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}>Mod Değiştir</p>
@@ -244,6 +296,14 @@ function App() {
                 <option value="Coupe">Coupe</option>
               </select>
 
+              {/* ISPARTA KONUM SEÇİMİ (İLAN VERİRKEN) */}
+              <select name="konum" value={yeniIlan.konum} onChange={handleChange} required>
+                <option value="">İlan Konumu Seç (Isparta)</option>
+                {ISPARTA_KONUMLAR.map(loc => (
+                  <option key={loc} value={loc}>{loc}</option>
+                ))}
+              </select>
+
               <input type="number" name="fiyat" placeholder="Fiyat" value={yeniIlan.fiyat} onChange={handleChange} required />
               <input type="text" name="aciklama" placeholder="Açıklama" value={yeniIlan.aciklama} onChange={handleChange} required />
               <input type="file" id="resim-input" multiple accept="image/*" onChange={e => setResimDosyalari(e.target.files)} />
@@ -262,38 +322,18 @@ function App() {
             <option value="enYeni">En Yeni İlanlar</option>
             <option value="fiyatArtan">Fiyat: Artan</option>
             <option value="fiyatAzalan">Fiyat: Azalan</option>
-            <option value="kmArtan">KM: Artan</option>
-            <option value="kmAzalan">KM: Azalan</option>
           </select>
 
-          <select name="vites" value={filtreler.vites} onChange={handleFiltreChange}>
-            <option value="">Tüm Vitesler</option>
-            <option value="Manuel">Manuel</option>
-            <option value="Otomatik">Otomatik</option>
-            <option value="Yarı Otomatik">Yarı Otomatik</option>
-          </select>
-
-          <select name="yakit" value={filtreler.yakit} onChange={handleFiltreChange}>
-            <option value="">Tüm Yakıtlar</option>
-            <option value="Benzin">Benzin</option>
-            <option value="Dizel">Dizel</option>
-            <option value="LPG">LPG</option>
-            <option value="Elektrik">Elektrik</option>
-            <option value="Hibrit">Hibrit</option>
-            <option value="Benzin & LPG">Benzin & LPG</option>
-          </select>
-
-          <select name="kasaTipi" value={filtreler.kasaTipi} onChange={handleFiltreChange}>
-            <option value="">Tüm Kasalar</option>
-            <option value="Sedan">Sedan</option>
-            <option value="Hatchback">Hatchback</option>
-            <option value="SUV">SUV</option>
-            <option value="Station Wagon">Station Wagon</option>
-            <option value="Coupe">Coupe</option>
+          {/* KONUM FİLTRESİ */}
+          <select name="konum" value={filtreler.konum} onChange={handleFiltreChange}>
+            <option value="">Tüm Konumlar (Isparta)</option>
+            {ISPARTA_KONUMLAR.map(loc => (
+              <option key={loc} value={loc}>{loc}</option>
+            ))}
           </select>
 
           <input type="number" name="maxFiyat" placeholder="Maks Fiyat" value={filtreler.maxFiyat} onChange={handleFiltreChange} />
-          <button className="temizle-btn" onClick={() => {setFiltreler({ vites: '', yakit: '', kasaTipi: '', minFiyat: '', maxFiyat: '', maxKm: '' }); setSadeceFavoriler(false)}}>Temizle</button>
+          <button className="temizle-btn" onClick={() => {setFiltreler({ vites: '', yakit: '', kasaTipi: '', minFiyat: '', maxFiyat: '', maxKm: '', konum: '' }); setSadeceFavoriler(false)}}>Temizle</button>
         </div>
 
         <div className="liste-grid">
@@ -306,9 +346,9 @@ function App() {
                   </div>
                 )}
                 {a.resimler && a.resimler.length > 0 ? (
-                  <img src={`http://localhost:5000/uploads/${a.resimler[0]}`} alt="Araba" className="araba-kart-resim" />
+                  <img src={`${API_URL}/uploads/${a.resimler[0]}`} alt="Araba" className="araba-kart-resim" />
                 ) : a.resim ? (
-                  <img src={`http://localhost:5000/uploads/${a.resim}`} alt="Eski Foto" className="araba-kart-resim" />
+                  <img src={`${API_URL}/uploads/${a.resim}`} alt="Eski Foto" className="araba-kart-resim" />
                 ) : (
                   <div className="resim-yok-alani">Fotoğraf Yok</div>
                 )}
@@ -317,10 +357,15 @@ function App() {
               <div className="kart-bilgi">
                 <h3 className="ilan-baslik">{a.marka} {a.seri}</h3>
                 <p className="fiyat">{a.fiyat} TL</p>
+                <p className="konum-etiket">📍 {a.konum}</p> {/* KARTTA KONUM GÖSTERİMİ */}
                 <p className="ozellik-metin">{a.model} - {a.yil} - {a.kilometre} KM</p>
                 <p className="ozellik-alt-metin">{a.yakit} | {a.vites} | {a.kasaTipi}</p>
                 
-                {isLoggedIn && (user?.id === a.saticiId || user?._id === a.saticiId || user?.rol === 'admin') && (
+                {isLoggedIn && (
+                  String(user?.id) === String(a.saticiId) || 
+                  String(user?._id) === String(a.saticiId) || 
+                  user?.rol === 'admin'
+                ) && (
                   <div className="kart-butonlar">
                     <button className="btn-duzenle" onClick={() => { setYeniIlan(a); setDuzenlenenId(a._id); setProfileMode(false); window.scrollTo(0,0); }}>Düzenle</button>
                     <button className="btn-sil" onClick={() => ilanSil(a._id)}>Sil</button>
