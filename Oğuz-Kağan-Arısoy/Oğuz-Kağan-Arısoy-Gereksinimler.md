@@ -1,5 +1,11 @@
 [render adres](https://arabam-benzeri-site.onrender.com)
 
+render adresine:
+
+/api/arabalar 
+
+eklersek renderin doğru çalıştığını görebiliriz
+
 [vercel adres](https://32bit-garage-auwh4803q-oguzkgns-projects.vercel.app/)
 
 1) **Kayıt Olma**
