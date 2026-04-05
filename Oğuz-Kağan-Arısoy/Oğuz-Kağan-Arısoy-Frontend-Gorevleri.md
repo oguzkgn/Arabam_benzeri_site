@@ -1,5 +1,5 @@
 # Oğuz Kağan Arısoy'un Mobil Frontend Görevleri
-**Mobile Front-end Demo Videosu:** [Link buraya eklenecek](https://example.com)
+**Mobile Front-end Demo Videosu:** [32BitGarage](https://youtu.be/R94exoo6X5A)
 
 ## 1. Üye Olma (Kayıt) Ekranı
 - **API Endpoint:** `POST /auth/register`
