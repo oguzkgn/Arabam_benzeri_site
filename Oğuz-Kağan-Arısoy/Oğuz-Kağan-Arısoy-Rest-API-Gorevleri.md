@@ -2,6 +2,16 @@
 
 **API Test Videosu:** [Link](https://youtu.be/R94exoo6X5A)
 
+[render adres](https://arabam-benzeri-site.onrender.com)
+
+render adresine:
+
+/api/arabalar 
+
+eklersek renderin doğru çalıştığını görebiliriz
+
+[vercel adres](https://32bit-garage-auwh4803q-oguzkgns-projects.vercel.app/)
+
 ## 1. Üye Olma
 - **Endpoint:** `POST /auth/register`
 - **Request Body:** 
