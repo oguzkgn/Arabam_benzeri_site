@@ -1,5 +1,7 @@
 [render adres](https://arabam-benzeri-site.onrender.com)
 
+[vercel adres](https://32bit-garage-auwh4803q-oguzkgns-projects.vercel.app/)
+
 1) **Kayıt Olma**
 - **API Metodu:** POST /api/auth/register
 - **Açıklama:** Kullanıcı (öğrenci veya yerel halk) sisteme ad-soyad, email, telefon numarası ve şifre ile kayıt olur. (Not: Email adresi sistemde benzersiz olmalıdır.)
