@@ -1,6 +1,16 @@
 # Oğuz Kağan Arısoy'un Web Frontend Görevleri
 **Front-end Test Videosu:** [Link](https://youtu.be/R94exoo6X5A)
 
+[render adres](https://arabam-benzeri-site.onrender.com)
+
+render adresine:
+
+/api/arabalar 
+
+eklersek renderin doğru çalıştığını görebiliriz
+
+[vercel adres](https://32bit-garage-auwh4803q-oguzkgns-projects.vercel.app/)
+
 ## 1. Üye Olma (Kayıt) Sayfası
 - **API Endpoint:** `POST /auth/register`
 - **Görev:** Kullanıcı kayıt işlemi için web sayfası tasarımı ve implementasyonu
