@@ -12,13 +12,14 @@ const arabaSema = new mongoose.Schema({
   fiyat: { type: Number, required: true },
   aciklama: { type: String, required: true },
   
-  // --- MÜHENDİSLİK DÜZELTMELERİ BURADA ---
-  
-  // 1. EKSİK OLAN KONUM EKLENDİ (Frontend'den gelen Isparta mahallelerini tutacak)
+  // Mahalle filtreleri ve çoklu fotoğraf için
   konum: { type: String, required: true }, 
-
-  // 2. TEK RESİM YERİNE "RESİMLER" DİZİSİ EKLENDİ ([ ] köşeli parantezlere dikkat)
-  resimler: [{ type: String }] 
+  resimler: [{ type: String }],
+  
+  // --- KRİTİK GÜVENLİK KİLİDİ ---
+  // Bu ilanın hangi kullanıcıya ait olduğunu tutar.
+  // Başkasının ilanı silmesini veya düzenlemesini engeller.
+  saticiId: { type: String, required: true } 
   
 }, { timestamps: true });
 
