@@ -86,19 +86,29 @@ function App() {
   const handleAuthSubmit = (e) => {
     e.preventDefault();
     const url = authMode === 'login' ? '/api/auth/login' : '/api/auth/register';
-    axios.post(`${API_URL}${url}`, authData)
+    
+    // KRİTİK DÜZELTME: Sadece gerekli alanları bir "paket" (payload) haline getiriyoruz.
+    const payload = authMode === 'login' 
+      ? { email: authData.email, sifre: authData.sifre } // Giriş için sadece bunlar lazım
+      : { adSoyad: authData.adSoyad, email: authData.email, sifre: authData.sifre }; // Kayıt için bu üçü
+  
+    axios.post(`${API_URL}${url}`, payload) // authData yerine hazırladığımız payload'ı gönderiyoruz
       .then(res => {
         if (authMode === 'login') {
           localStorage.setItem('token', res.data.token);
           localStorage.setItem('user', JSON.stringify(res.data.kullanici));
           setUser(res.data.kullanici);
           setIsLoggedIn(true);
+          // Formu temizle
           setAuthData({ adSoyad: '', email: '', sifre: '', eskiSifre: '', yeniSifre: '' });
         } else {
           alert("Kayıt başarılı! Şimdi giriş yap.");
           setAuthMode('login');
         }
-      }).catch(err => alert(err.response?.data?.mesaj || "Hata!"));
+      }).catch(err => {
+        console.error("Hata detayı:", err.response?.data);
+        alert(err.response?.data?.mesaj || "Giriş başarısız! Bilgilerini kontrol et.");
+      });
   };
 
   const handleUpdateProfile = (e) => {
