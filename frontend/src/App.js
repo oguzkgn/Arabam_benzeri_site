@@ -55,13 +55,13 @@ function App() {
   const [yeniIlan, setYeniIlan] = useState({
     marka: '', seri: '', model: '', yil: '', kilometre: '',
     vites: '', yakit: '', kasaTipi: '', fiyat: '', aciklama: '',
-    konum: '' // Konum state'e eklendi
+    konum: '' 
   });
 
   const [filtreler, setFiltreler] = useState({ 
     vites: '', yakit: '', kasaTipi: '', 
     minFiyat: '', maxFiyat: '', maxKm: '',
-    konum: '' // Filtreleme için konum eklendi
+    konum: '' 
   });
   
   const [siralama, setSiralama] = useState('enYeni');
@@ -87,19 +87,17 @@ function App() {
     e.preventDefault();
     const url = authMode === 'login' ? '/api/auth/login' : '/api/auth/register';
     
-    // KRİTİK DÜZELTME: Sadece gerekli alanları bir "paket" (payload) haline getiriyoruz.
     const payload = authMode === 'login' 
-      ? { email: authData.email, sifre: authData.sifre } // Giriş için sadece bunlar lazım
-      : { adSoyad: authData.adSoyad, email: authData.email, sifre: authData.sifre }; // Kayıt için bu üçü
+      ? { email: authData.email, sifre: authData.sifre }
+      : { adSoyad: authData.adSoyad, email: authData.email, sifre: authData.sifre };
   
-    axios.post(`${API_URL}${url}`, payload) // authData yerine hazırladığımız payload'ı gönderiyoruz
+    axios.post(`${API_URL}${url}`, payload)
       .then(res => {
         if (authMode === 'login') {
           localStorage.setItem('token', res.data.token);
           localStorage.setItem('user', JSON.stringify(res.data.kullanici));
           setUser(res.data.kullanici);
           setIsLoggedIn(true);
-          // Formu temizle
           setAuthData({ adSoyad: '', email: '', sifre: '', eskiSifre: '', yeniSifre: '' });
         } else {
           alert("Kayıt başarılı! Şimdi giriş yap.");
@@ -161,25 +159,47 @@ function App() {
   const handleChange = (e) => setYeniIlan({ ...yeniIlan, [e.target.name]: e.target.value });
   const handleFiltreChange = (e) => setFiltreler({ ...filtreler, [e.target.name]: e.target.value });
 
+  // --- İLAN EKLEME VE GÜNCELLEME MOTORU (KUSURSUZ HALE GETİRİLDİ) ---
   const handleSubmit = (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
     const formData = new FormData();
-    Object.keys(yeniIlan).forEach(key => formData.append(key, yeniIlan[key]));
-    if (resimDosyalari) {
+    
+    // MÜHENDİSLİK ÇÖZÜMÜ: Sadece veritabanının beklediği temiz verileri gönderiyoruz.
+    // MongoDB ID'leri veya eski resim dizilerini göndermeyi engelliyoruz.
+    const gonderilecekAlanlar = ['marka', 'seri', 'model', 'yil', 'kilometre', 'vites', 'yakit', 'kasaTipi', 'fiyat', 'aciklama', 'konum'];
+    
+    gonderilecekAlanlar.forEach(key => {
+      if(yeniIlan[key] !== undefined && yeniIlan[key] !== null) {
+        formData.append(key, yeniIlan[key]);
+      }
+    });
+
+    // Çoklu resim dosyalarını pakete ekleme
+    if (resimDosyalari && resimDosyalari.length > 0) {
       for (let i = 0; i < resimDosyalari.length; i++) {
         formData.append('resimler', resimDosyalari[i]);
       }
     }
+
     const method = duzenlenenId ? 'put' : 'post';
     const url = `${API_URL}/api/arabalar${duzenlenenId ? '/' + duzenlenenId : ''}`;
-    axios[method](url, formData, { headers: { 'x-auth-token': token } })
+    
+    axios[method](url, formData, { 
+      headers: { 
+        'x-auth-token': token
+        // Not: FormData kullanırken Content-Type axios tarafından otomatik ayarlanır.
+      } 
+    })
       .then(() => {
-        alert("İşlem Başarılı!");
+        alert("İlan Başarıyla Eklendi/Güncellendi!");
         tumIlanlariGetir();
         formSifirla();
       })
-      .catch(err => alert(err.response?.data?.mesaj || "İşlem başarısız!"));
+      .catch(err => {
+        console.error("Sunucu Hatası Detayı:", err.response?.data);
+        alert(err.response?.data?.mesaj || "İlan kaydedilemedi. Tüm alanları doldurduğunuzdan emin olun.");
+      });
   };
 
   const ilanSil = (id) => {
@@ -198,14 +218,14 @@ function App() {
     if(fileInput) fileInput.value = '';
   };
 
-  // --- AKILLI FİLTRELEME MOTORU (KONUM DAHİL) ---
+  // --- AKILLI FİLTRELEME MOTORU ---
   let islenenArabalar = [...arabalar];
   if (filtreler.vites) islenenArabalar = islenenArabalar.filter(a => a.vites === filtreler.vites);
   if (filtreler.yakit) islenenArabalar = islenenArabalar.filter(a => a.yakit.toLowerCase().includes(filtreler.yakit.toLowerCase()));
   if (filtreler.kasaTipi) islenenArabalar = islenenArabalar.filter(a => a.kasaTipi === filtreler.kasaTipi);
   if (filtreler.maxKm) islenenArabalar = islenenArabalar.filter(a => Number(a.kilometre) <= Number(filtreler.maxKm));
   if (filtreler.maxFiyat) islenenArabalar = islenenArabalar.filter(a => Number(a.fiyat) <= Number(filtreler.maxFiyat));
-  if (filtreler.konum) islenenArabalar = islenenArabalar.filter(a => a.konum === filtreler.konum); // Konum filtresi
+  if (filtreler.konum) islenenArabalar = islenenArabalar.filter(a => a.konum === filtreler.konum); 
   if (sadeceFavoriler) islenenArabalar = islenenArabalar.filter(a => favoriler.includes(a._id));
 
   islenenArabalar.sort((a, b) => {
@@ -306,7 +326,6 @@ function App() {
                 <option value="Coupe">Coupe</option>
               </select>
 
-              {/* ISPARTA KONUM SEÇİMİ (İLAN VERİRKEN) */}
               <select name="konum" value={yeniIlan.konum} onChange={handleChange} required>
                 <option value="">İlan Konumu Seç (Isparta)</option>
                 {ISPARTA_KONUMLAR.map(loc => (
@@ -316,7 +335,10 @@ function App() {
 
               <input type="number" name="fiyat" placeholder="Fiyat" value={yeniIlan.fiyat} onChange={handleChange} required />
               <input type="text" name="aciklama" placeholder="Açıklama" value={yeniIlan.aciklama} onChange={handleChange} required />
+              
+              {/* ÇOKLU FOTOĞRAF SEÇİMİ AÇIK */}
               <input type="file" id="resim-input" multiple accept="image/*" onChange={e => setResimDosyalari(e.target.files)} />
+              
               <button type="submit" className="kaydet-btn">Onayla</button>
               {duzenlenenId && <button type="button" className="iptal-btn" onClick={formSifirla}>İptal</button>}
             </form>
@@ -334,7 +356,6 @@ function App() {
             <option value="fiyatAzalan">Fiyat: Azalan</option>
           </select>
 
-          {/* KONUM FİLTRESİ */}
           <select name="konum" value={filtreler.konum} onChange={handleFiltreChange}>
             <option value="">Tüm Konumlar (Isparta)</option>
             {ISPARTA_KONUMLAR.map(loc => (
@@ -367,7 +388,7 @@ function App() {
               <div className="kart-bilgi">
                 <h3 className="ilan-baslik">{a.marka} {a.seri}</h3>
                 <p className="fiyat">{a.fiyat} TL</p>
-                <p className="konum-etiket">📍 {a.konum}</p> {/* KARTTA KONUM GÖSTERİMİ */}
+                <p className="konum-etiket">📍 {a.konum}</p>
                 <p className="ozellik-metin">{a.model} - {a.yil} - {a.kilometre} KM</p>
                 <p className="ozellik-alt-metin">{a.yakit} | {a.vites} | {a.kasaTipi}</p>
                 
