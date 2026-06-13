@@ -83,6 +83,11 @@ function App() {
       .catch(err => console.error("Veri çekme hatası:", err));
   };
 
+  const isListingOwner = (listing) => {
+    if (!user || !listing) return false;
+    return String(user.id) === String(listing.saticiId);
+  };
+
   const handleAuthSubmit = (e) => {
     e.preventDefault();
     const url = authMode === 'login' ? '/api/auth/login' : '/api/auth/register';
@@ -150,7 +155,8 @@ function App() {
   };
 
   const handleLogout = () => {
-    localStorage.clear();
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setIsLoggedIn(false);
     setUser(null);
     window.location.reload();
@@ -159,10 +165,23 @@ function App() {
   const handleChange = (e) => setYeniIlan({ ...yeniIlan, [e.target.name]: e.target.value });
   const handleFiltreChange = (e) => setFiltreler({ ...filtreler, [e.target.name]: e.target.value });
 
-  // --- İLAN EKLEME VE GÜNCELLEME MOTORU (KUSURSUZ HALE GETİRİLDİ) ---
   const handleSubmit = (e) => {
     e.preventDefault();
+
     const token = localStorage.getItem('token');
+    if (!isLoggedIn || !token) {
+      alert('İlan vermek veya düzenlemek için giriş yapmalısınız.');
+      return;
+    }
+
+    if (duzenlenenId) {
+      const ilan = arabalar.find(a => a._id === duzenlenenId);
+      if (!ilan || !isListingOwner(ilan)) {
+        alert('Bu ilanı düzenleme yetkiniz yok.');
+        formSifirla();
+        return;
+      }
+    }
     const formData = new FormData();
     
     // MÜHENDİSLİK ÇÖZÜMÜ: Sadece veritabanının beklediği temiz verileri gönderiyoruz.
@@ -203,11 +222,30 @@ function App() {
   };
 
   const ilanSil = (id) => {
+    const ilan = arabalar.find(a => a._id === id);
+    if (!isListingOwner(ilan)) {
+      alert('Bu ilanı silme yetkiniz yok.');
+      return;
+    }
+
     if (window.confirm("Bu ilanı silmek istediğine emin misin?")) {
       axios.delete(`${API_URL}/api/arabalar/${id}`, {
         headers: { 'x-auth-token': localStorage.getItem('token') }
-      }).then(() => tumIlanlariGetir()).catch(err => alert("Silme yetkiniz yok!"));
+      })
+        .then(() => tumIlanlariGetir())
+        .catch(err => alert(err.response?.data?.mesaj || "Silme yetkiniz yok!"));
     }
+  };
+
+  const ilanDuzenle = (ilan) => {
+    if (!isListingOwner(ilan)) {
+      alert('Bu ilanı düzenleme yetkiniz yok.');
+      return;
+    }
+    setYeniIlan(ilan);
+    setDuzenlenenId(ilan._id);
+    setProfileMode(false);
+    window.scrollTo(0, 0);
   };
 
   const formSifirla = () => {
@@ -371,11 +409,9 @@ function App() {
           {islenenArabalar.map(a => (
             <div key={a._id} className="araba-kart-konteynir">
               <div className="araba-kart-resim-alani">
-                {isLoggedIn && (
-                  <div className={`fav-icon ${favoriler.includes(a._id) ? 'active' : ''}`} onClick={() => toggleFavori(a._id)}>
-                    {favoriler.includes(a._id) ? '❤️' : '🤍'}
-                  </div>
-                )}
+                <div className={`fav-icon ${favoriler.includes(a._id) ? 'active' : ''}`} onClick={() => toggleFavori(a._id)}>
+                  {favoriler.includes(a._id) ? '❤️' : '🤍'}
+                </div>
                 {a.resimler && a.resimler.length > 0 ? (
                   <img src={`${API_URL}/uploads/${a.resimler[0]}`} alt="Araba" className="araba-kart-resim" />
                 ) : a.resim ? (
@@ -392,13 +428,9 @@ function App() {
                 <p className="ozellik-metin">{a.model} - {a.yil} - {a.kilometre} KM</p>
                 <p className="ozellik-alt-metin">{a.yakit} | {a.vites} | {a.kasaTipi}</p>
                 
-                {isLoggedIn && (
-                  String(user?.id) === String(a.saticiId) || 
-                  String(user?._id) === String(a.saticiId) || 
-                  user?.rol === 'admin'
-                ) && (
+                {isLoggedIn && isListingOwner(a) && (
                   <div className="kart-butonlar">
-                    <button className="btn-duzenle" onClick={() => { setYeniIlan(a); setDuzenlenenId(a._id); setProfileMode(false); window.scrollTo(0,0); }}>Düzenle</button>
+                    <button className="btn-duzenle" onClick={() => ilanDuzenle(a)}>Düzenle</button>
                     <button className="btn-sil" onClick={() => ilanSil(a._id)}>Sil</button>
                   </div>
                 )}
