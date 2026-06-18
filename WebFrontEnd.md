@@ -1,8 +1,8 @@
 # Web Frontend Görev Dağılımı
 
-**Web Frontend Adresi:** [frontend.yazmuh.com](https://frontend.yazmuh.com)
+**Web Frontend Adresi:** [32BitGarage](https://32bit-garage.vercel.app/)
 
-Bu dokümanda, web uygulamasının kullanıcı arayüzü (UI) ve kullanıcı deneyimi (UX) görevleri listelenmektedir. Her grup üyesi, kendisine atanan sayfaların tasarımı, implementasyonu ve kullanıcı etkileşimlerinden sorumludur.
+
 
 ---
 
