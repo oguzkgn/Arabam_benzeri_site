@@ -1,17 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { API_URL } from '../constants/config';
 import { colors } from '../theme/colors';
 
 export default function ListingCard({ listing, isFavorite, onPress, onToggleFavorite, showOwnerActions, onEdit, onDelete }) {
+  const [imageError, setImageError] = useState(false);
   const imageUrl = listing.resimler?.[0]
     ? `${API_URL}/uploads/${listing.resimler[0]}`
     : null;
+  const showImage = imageUrl && !imageError;
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.9}>
-      {imageUrl ? (
-        <Image source={{ uri: imageUrl }} style={styles.image} />
+      {showImage ? (
+        <Image
+          source={{ uri: imageUrl }}
+          style={styles.image}
+          onError={() => setImageError(true)}
+        />
       ) : (
         <View style={[styles.image, styles.noImage]}>
           <Text style={styles.noImageText}>Fotoğraf Yok</Text>

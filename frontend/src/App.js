@@ -413,9 +413,19 @@ function App() {
                   {favoriler.includes(a._id) ? '❤️' : '🤍'}
                 </div>
                 {a.resimler && a.resimler.length > 0 ? (
-                  <img src={`${API_URL}/uploads/${a.resimler[0]}`} alt="Araba" className="araba-kart-resim" />
+                  <img
+                    src={`${API_URL}/uploads/${a.resimler[0]}`}
+                    alt="Araba"
+                    className="araba-kart-resim"
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  />
                 ) : a.resim ? (
-                  <img src={`${API_URL}/uploads/${a.resim}`} alt="Eski Foto" className="araba-kart-resim" />
+                  <img
+                    src={`${API_URL}/uploads/${a.resim}`}
+                    alt="Eski Foto"
+                    className="araba-kart-resim"
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  />
                 ) : (
                   <div className="resim-yok-alani">Fotoğraf Yok</div>
                 )}

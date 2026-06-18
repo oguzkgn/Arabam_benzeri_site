@@ -11,22 +11,19 @@ const bcrypt = require('bcryptjs');
 const Araba = require('./models/Araba');
 const User = require('./models/User');
 const { authMiddleware, signToken } = require('./middleware/auth');
+const { saveUploadedFiles, streamFile, deleteStoredFiles } = require('./services/fileStorage');
 
 const app = express();
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
 
-if (!fs.existsSync('./uploads')) {
-  fs.mkdirSync('./uploads');
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR);
 }
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, './uploads/');
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname.replace(/\s+/g, '-'));
-  }
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024, files: 5 }
 });
-const upload = multer({ storage: storage });
 
 const LISTING_FIELDS = ['marka', 'seri', 'model', 'yil', 'kilometre', 'vites', 'yakit', 'kasaTipi', 'fiyat', 'aciklama', 'konum'];
 
@@ -54,18 +51,15 @@ async function assertListingOwner(req, res) {
 }
 
 function deleteUploadFiles(filenames) {
-  if (!filenames || filenames.length === 0) return;
-  filenames.forEach((filename) => {
-    const filePath = path.join(__dirname, 'uploads', filename);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-  });
+  return deleteStoredFiles(filenames, UPLOADS_DIR);
 }
 
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.get('/uploads/:filename', async (req, res) => {
+  await streamFile(req.params.filename, UPLOADS_DIR, res);
+});
 
 const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://oguz_api:SeninSifren123@cluster0.6bfboko.mongodb.net/32bitgarage?appName=Cluster0";
 
@@ -199,9 +193,9 @@ app.delete('/api/auth/delete', authMiddleware, async (req, res) => {
     const userId = req.user.id;
     const kullaniciIlanlari = await Araba.find({ saticiId: userId });
 
-    kullaniciIlanlari.forEach((ilan) => {
-      deleteUploadFiles(ilan.resimler);
-    });
+    for (const ilan of kullaniciIlanlari) {
+      await deleteUploadFiles(ilan.resimler);
+    }
 
     await Araba.deleteMany({ saticiId: userId });
     await User.findByIdAndDelete(userId);
@@ -234,7 +228,7 @@ app.post('/api/arabalar', authMiddleware, upload.array('resimler', 5), async (re
     arabaVerisi.saticiId = req.user.id;
 
     if (req.files && req.files.length > 0) {
-      arabaVerisi.resimler = req.files.map(file => file.filename);
+      arabaVerisi.resimler = await saveUploadedFiles(req.files, UPLOADS_DIR);
     }
 
     const yeniAraba = new Araba(arabaVerisi);
@@ -254,7 +248,7 @@ app.put('/api/arabalar/:id', authMiddleware, upload.array('resimler', 5), async 
     const guncelVeri = parseListingBody(req.body);
 
     if (req.files && req.files.length > 0) {
-      const yeniResimler = req.files.map(file => file.filename);
+      const yeniResimler = await saveUploadedFiles(req.files, UPLOADS_DIR);
       guncelVeri.resimler = [...(araba.resimler || []), ...yeniResimler];
     }
 
@@ -274,12 +268,16 @@ app.delete('/api/arabalar/:id', authMiddleware, async (req, res) => {
     const araba = await assertListingOwner(req, res);
     if (!araba) return;
 
-    deleteUploadFiles(araba.resimler);
+    await deleteUploadFiles(araba.resimler);
     await Araba.findByIdAndDelete(req.params.id);
     res.status(200).json({ mesaj: "İlan silindi." });
   } catch (error) {
     res.status(400).json({ mesaj: "Silme işlemi başarısız." });
   }
+});
+
+app.use('/api', (req, res) => {
+  res.status(404).json({ mesaj: 'API endpoint bulunamadı.', yol: req.originalUrl });
 });
 
 const port = process.env.PORT || 5000;
