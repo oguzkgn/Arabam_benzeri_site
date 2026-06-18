@@ -1,32 +1,18 @@
 {
   "name": "arabam_benzeri_site",
   "version": "1.0.0",
-  "description": "<img width=\"2750\" height=\"1536\" alt=\"Product\" src=\"https://github.com/user-attachments/assets/90d658a3-5ad4-46e9-bc98-684e423ceab3\" />",
-  "main": "index.js",
+  "private": true,
+  "description": "32Bit Garage - Web ve Mobil Araç İlan Platformu",
   "scripts": {
-    "start": "node app.js",
-    "start:mobile": "node mobile-backend/server.js",
-    "worker:mobile": "node mobile-backend/workers/eventWorker.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start:web-backend": "npm --prefix web/backend start",
+    "start:web-frontend": "npm --prefix web/frontend start",
+    "start:mobile-backend": "npm --prefix mobile/backend start",
+    "start:mobile-frontend": "npm --prefix mobile/frontend start",
+    "worker:mobile": "npm --prefix mobile/backend run worker"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/oguzkgn/Arabam_benzeri_site.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/oguzkgn/Arabam_benzeri_site/issues"
-  },
-  "homepage": "https://github.com/oguzkgn/Arabam_benzeri_site#readme",
-  "dependencies": {
-    "bcryptjs": "^3.0.3",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.0",
-    "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.4.1",
-    "multer": "^2.1.1"
-  }
+  "homepage": "https://github.com/oguzkgn/Arabam_benzeri_site#readme"
 }

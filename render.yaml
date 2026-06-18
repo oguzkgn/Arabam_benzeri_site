@@ -3,6 +3,7 @@ services:
     name: arabam-benzeri-site
     runtime: node
     plan: free
+    rootDir: web/backend
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /api/health

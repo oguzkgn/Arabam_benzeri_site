@@ -1,39 +1,77 @@
-# Arabam_benzeri_site
+# 32Bit Garage
 
-<img width="2750" height="1536" alt="Product" src="https://github.com/user-attachments/assets/90d658a3-5ad4-46e9-bc98-684e423ceab3" />
+Isparta odaklı araç ilan platformu — Web + Mobil
 
+**GitHub:** https://github.com/oguzkgn/Arabam_benzeri_site
 
-## Proje Tanımı: Ulusal çapta hizmet veren büyük ilan siteleri (Sahibinden, Arabam vb.), yerel bir öğrencinin veya Isparta'da yaşayan birinin hızlıca sonuca ulaşması için fazla karmaşıktır. 32Bit Garage, "İl/İlçe" gibi geniş filtreler yerine doğrudan Isparta'nın öğrenci ve yaşam dinamiklerine (Çünür, Fatih Mahallesi, Iyaş Bölgesi vb.) odaklanır.
+## Canlı adresler
 
-**Amacımız;** kampüs içindeki veya aynı şehirdeki alıcı ve satıcıları hızlıca buluşturan, gereksiz özelliklerden arındırılmış, sadece amaca hizmet eden (işlevsel) ve güven odaklı kapalı bir pazar yeri oluşturmaktır.
+| Servis | Adres |
+|--------|-------|
+| Web sitesi | https://32bit-garage.vercel.app/ |
+| REST API | https://arabam-benzeri-site.onrender.com |
 
-## Proje Kategorisi: _E-Ticaret_
+## Proje yapısı
 
-## Referans Uygulama: [arabam](https://www.arabam.com/)
+```
+Arabam_benzeri_site/
+├── web/
+│   ├── frontend/          → React web arayüzü (Vercel)
+│   └── backend/           → Ortak REST API (Render) — web + mobil
+├── mobile/
+│   ├── frontend/          → Expo mobil uygulama
+│   └── backend/           → Redis + RabbitMQ mobil API (opsiyonel)
+├── docker-compose.yml     → Redis + RabbitMQ
+└── render.yaml            → Render deploy ayarı
+```
 
-## Proje Linkleri:
+## GitHub klasör adresleri
 
-## Proje Ekibi: Oğuz Kağan Arısoy
-### Grup Adı: 32Bit Garage
-### Ekip Üyeleri: Oğuz Kağan Arısoy
+### Web
+- Frontend: https://github.com/oguzkgn/Arabam_benzeri_site/tree/main/web/frontend
+- Backend: https://github.com/oguzkgn/Arabam_benzeri_site/tree/main/web/backend
+- Backend API (`app.js`): https://github.com/oguzkgn/Arabam_benzeri_site/blob/main/web/backend/app.js
 
-## Dökümantasyon:
-Proje dokümantasyonuna aşağıdaki linklerden erişebilirsiniz:
+### Mobil
+- Frontend: https://github.com/oguzkgn/Arabam_benzeri_site/tree/main/mobile/frontend
+- Backend: https://github.com/oguzkgn/Arabam_benzeri_site/tree/main/mobile/backend
 
-**1)[Oğuz Kağan Arısoy'un Gereksinimleri](Gereksinim-Analizi.md)**
+## Hızlı başlangıç
 
-**2)[Oğuz Kağan Arısoy'un REST API Tasarımı](API-Tasarimi.md)**
+```bash
+# Web backend
+npm run start:web-backend
 
-**3)REST API**
+# Web frontend
+npm run start:web-frontend
 
-**4)Web Front-End**
+# Mobil frontend
+npm run start:mobile-frontend
 
-**5)Mobil Front-End**
+# Mobil backend (opsiyonel)
+npm run start:mobile-backend
+```
 
-**6)Mobil Backend**
+## REST API endpoint'leri
 
-**7)Video Sunum**
+| Method | Endpoint |
+|--------|----------|
+| GET | `/api/arabalar` |
+| POST | `/api/auth/register` |
+| POST | `/api/auth/login` |
+| POST | `/api/arabalar` |
+| PUT | `/api/arabalar/:id` |
+| DELETE | `/api/arabalar/:id` |
+| PUT | `/api/auth/update` |
+| DELETE | `/api/auth/delete` |
+| GET | `/api/health` |
 
+## Deploy ayarları
 
+**Render (API):** Root Directory = `web/backend` · Start = `npm start`
 
+**Vercel (Web):** Root Directory = `web/frontend` · Build = `npm run build`
 
+## Ekip
+
+Oğuz Kağan Arısoy — 32Bit Garage

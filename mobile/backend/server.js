@@ -8,9 +8,9 @@ const cors = require('cors');
 const multer = require('multer');
 const bcrypt = require('bcryptjs');
 
-const User = require('../models/User');
-const Araba = require('../models/Araba');
-const Favorite = require('../models/Favorite');
+const User = require('../../web/backend/models/User');
+const Araba = require('../../web/backend/models/Araba');
+const Favorite = require('../../web/backend/models/Favorite');
 const { authMiddleware, signToken } = require('./middleware/auth');
 const { getRedis, connectRedis } = require('./config/redis');
 const { connectRabbitMQ } = require('./config/rabbitmq');
@@ -34,7 +34,7 @@ const {
 } = require('./services/eventService');
 
 const app = express();
-const UPLOADS_DIR = path.join(__dirname, '../uploads');
+const UPLOADS_DIR = path.join(__dirname, '../../web/backend/uploads');
 
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
