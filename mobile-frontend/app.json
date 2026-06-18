@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "32Bit Garage",
+    "slug": "32bitgarage-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#1a1a2e"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.bitgarage.mobile"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#1a1a2e"
+      },
+      "package": "com.bitgarage.mobile"
+    },
+    "plugins": [
+      "expo-asset",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "İlan fotoğrafları seçmek için galeri erişimi gerekir."
+        }
+      ]
+    ]
+  }
+}

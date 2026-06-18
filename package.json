@@ -4,6 +4,9 @@
   "description": "<img width=\"2750\" height=\"1536\" alt=\"Product\" src=\"https://github.com/user-attachments/assets/90d658a3-5ad4-46e9-bc98-684e423ceab3\" />",
   "main": "index.js",
   "scripts": {
+    "start": "node app.js",
+    "start:mobile": "node mobile-backend/server.js",
+    "worker:mobile": "node mobile-backend/workers/eventWorker.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
