@@ -69,9 +69,40 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://oguz_api:SeninSifren123@cluster0.6bfboko.mongodb.net/32bitgarage?appName=Cluster0";
 
-mongoose.connect(MONGO_URI)
+mongoose.connect(MONGO_URI, {
+  serverSelectionTimeoutMS: 15000,
+  socketTimeoutMS: 45000
+})
   .then(() => console.log("MongoDB Veritabanına Başarıyla Bağlanıldı!"))
   .catch(err => console.error("MongoDB Bağlantı Hatası:", err));
+
+function isDbReady() {
+  return mongoose.connection.readyState === 1;
+}
+
+// --- KÖK VE SAĞLIK KONTROLÜ (Render / tarayıcı testi için) ---
+app.get('/', (_req, res) => {
+  res.status(200).json({
+    mesaj: '32Bit Garage API çalışıyor',
+    durum: 'ok',
+    veritabani: isDbReady() ? 'bagli' : 'baglanti_bekleniyor',
+    endpointler: {
+      ilanlar: 'GET /api/arabalar',
+      giris: 'POST /api/auth/login',
+      kayit: 'POST /api/auth/register',
+      saglik: 'GET /api/health'
+    }
+  });
+});
+
+app.get('/api/health', (_req, res) => {
+  res.status(200).json({
+    durum: 'ok',
+    servis: '32bitgarage-api',
+    veritabani: isDbReady() ? 'bagli' : 'baglanti_bekleniyor',
+    zaman: new Date().toISOString()
+  });
+});
 
 // --- AUTH ROTALARI ---
 
@@ -186,9 +217,13 @@ app.delete('/api/auth/delete', authMiddleware, async (req, res) => {
 
 app.get('/api/arabalar', async (req, res) => {
   try {
+    if (!isDbReady()) {
+      return res.status(503).json({ mesaj: 'Veritabanı bağlantısı kuruluyor. Lütfen tekrar deneyin.' });
+    }
     const arabalar = await Araba.find().sort({ createdAt: -1 });
     res.status(200).json(arabalar);
   } catch (error) {
+    console.error('İlan listeleme hatası:', error);
     res.status(500).json({ mesaj: "İlanlar getirilirken bir hata oluştu." });
   }
 });
@@ -248,6 +283,7 @@ app.delete('/api/arabalar/:id', authMiddleware, async (req, res) => {
 });
 
 const port = process.env.PORT || 5000;
-app.listen(port, () => {
-  console.log(`🚀 Sunucu ${port} numaralı portta başarıyla çalışıyor!`);
+const host = process.env.HOST || '0.0.0.0';
+app.listen(port, host, () => {
+  console.log(`🚀 Sunucu http://${host}:${port} adresinde çalışıyor!`);
 });
