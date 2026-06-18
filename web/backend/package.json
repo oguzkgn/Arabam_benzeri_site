@@ -1,17 +1,24 @@
 {
   "name": "32bitgarage-web-backend",
   "version": "1.0.0",
-  "description": "32Bit Garage web ve mobil için ortak REST API",
+  "description": "32Bit Garage web ve mobil için ortak REST API (Redis + RabbitMQ)",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "node --watch app.js"
+    "dev": "node --watch app.js",
+    "worker": "node workers/eventWorker.js",
+    "test": "node --test tests/",
+    "test:redis": "node --test tests/redis.test.js",
+    "test:rabbitmq": "node --test tests/rabbitmq.test.js",
+    "test:integration": "node --test tests/"
   },
   "dependencies": {
+    "amqplib": "^0.10.9",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.0",
     "express": "^5.2.1",
+    "ioredis": "^5.9.3",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.4.1",
     "multer": "^2.1.1"

@@ -1,19 +1,67 @@
 services:
+  # --- REDIS ENTEGRASYONU ---
   redis:
     image: redis:7-alpine
+    container_name: 32bitgarage-redis
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # --- RABBITMQ ENTEGRASYONU ---
   rabbitmq:
     image: rabbitmq:3-management-alpine
+    container_name: 32bitgarage-rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --- DOCKER: WEB BACKEND API ---
+  api:
+    build: ./web/backend
+    container_name: 32bitgarage-api
+    ports:
+      - "5000:5000"
+    environment:
+      DOCKER_ENV: "true"
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://rabbitmq:5672
+      MONGO_URI: ${MONGO_URI}
+      JWT_SECRET: ${JWT_SECRET:-dev-jwt-secret}
+      PORT: 5000
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # --- RABBITMQ EVENT WORKER ---
+  worker:
+    build: ./web/backend
+    container_name: 32bitgarage-worker
+    command: node workers/eventWorker.js
+    environment:
+      RABBITMQ_URL: amqp://rabbitmq:5672
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      api:
+        condition: service_started
+    restart: unless-stopped
 
 volumes:
   redis_data:

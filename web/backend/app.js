@@ -12,6 +12,15 @@ const Araba = require('./models/Araba');
 const User = require('./models/User');
 const { authMiddleware, signToken } = require('./middleware/auth');
 const { saveUploadedFiles, streamFile, deleteStoredFiles } = require('./services/fileStorage');
+const { getRedis, connectRedis, getRedisStatus } = require('./config/redis');
+const { connectRabbitMQ, getRabbitMQStatus } = require('./config/rabbitmq');
+const { getCachedListings, setCachedListings, invalidateListingsCache } = require('./services/cacheService');
+const {
+  emitUserRegistered,
+  emitListingCreated,
+  emitListingUpdated,
+  emitListingDeleted
+} = require('./services/eventService');
 
 const app = express();
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
@@ -70,6 +79,9 @@ mongoose.connect(MONGO_URI, {
   .then(() => console.log("MongoDB Veritabanına Başarıyla Bağlanıldı!"))
   .catch(err => console.error("MongoDB Bağlantı Hatası:", err));
 
+connectRedis().catch(() => console.warn('[Redis] Başlangıçta bağlanılamadı'));
+connectRabbitMQ().catch(() => console.warn('[RabbitMQ] Başlangıçta bağlanılamadı'));
+
 function isDbReady() {
   return mongoose.connection.readyState === 1;
 }
@@ -89,11 +101,16 @@ app.get('/', (_req, res) => {
   });
 });
 
-app.get('/api/health', (_req, res) => {
+app.get('/api/health', async (_req, res) => {
   res.status(200).json({
     durum: 'ok',
     servis: '32bitgarage-api',
     veritabani: isDbReady() ? 'bagli' : 'baglanti_bekleniyor',
+    entegrasyonlar: {
+      redis: await getRedisStatus(),
+      rabbitmq: await getRabbitMQStatus(),
+      docker: process.env.DOCKER_ENV === 'true' ? 'aktif' : 'lokal'
+    },
     zaman: new Date().toISOString()
   });
 });
@@ -119,6 +136,7 @@ app.post('/api/auth/register', async (req, res) => {
       sifre: hashedSifre
     });
     await user.save();
+    await emitUserRegistered(user);
 
     res.status(201).json({ mesaj: 'Kayıt başarılı! Şimdi giriş yapabilirsiniz.' });
   } catch (error) {
@@ -214,7 +232,15 @@ app.get('/api/arabalar', async (req, res) => {
     if (!isDbReady()) {
       return res.status(503).json({ mesaj: 'Veritabanı bağlantısı kuruluyor. Lütfen tekrar deneyin.' });
     }
-    const arabalar = await Araba.find().sort({ createdAt: -1 });
+
+    const redis = getRedis();
+    let arabalar = await getCachedListings(redis);
+
+    if (!arabalar) {
+      arabalar = await Araba.find().sort({ createdAt: -1 }).lean();
+      await setCachedListings(redis, arabalar);
+    }
+
     res.status(200).json(arabalar);
   } catch (error) {
     console.error('İlan listeleme hatası:', error);
@@ -233,6 +259,10 @@ app.post('/api/arabalar', authMiddleware, upload.array('resimler', 5), async (re
 
     const yeniAraba = new Araba(arabaVerisi);
     await yeniAraba.save();
+
+    await invalidateListingsCache(getRedis());
+    await emitListingCreated(yeniAraba, req.user.id);
+
     res.status(201).json({ mesaj: "İlan başarıyla eklendi!", ilan: yeniAraba });
   } catch (error) {
     console.error("Kayıt Hatası Detayı:", error);
@@ -256,6 +286,9 @@ app.put('/api/arabalar/:id', authMiddleware, upload.array('resimler', 5), async 
     araba.saticiId = req.user.id;
     await araba.save();
 
+    await invalidateListingsCache(getRedis());
+    await emitListingUpdated(araba, req.user.id);
+
     res.status(200).json({ mesaj: "İlan başarıyla güncellendi!", ilan: araba });
   } catch (error) {
     console.error("Güncelleme Hatası:", error);
@@ -270,6 +303,10 @@ app.delete('/api/arabalar/:id', authMiddleware, async (req, res) => {
 
     await deleteUploadFiles(araba.resimler);
     await Araba.findByIdAndDelete(req.params.id);
+
+    await invalidateListingsCache(getRedis());
+    await emitListingDeleted(req.params.id, req.user.id);
+
     res.status(200).json({ mesaj: "İlan silindi." });
   } catch (error) {
     res.status(400).json({ mesaj: "Silme işlemi başarısız." });

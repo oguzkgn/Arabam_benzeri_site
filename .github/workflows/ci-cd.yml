@@ -1,0 +1,147 @@
+name: 32Bit Garage CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-syntax:
+    name: "1) Backend Syntax Kontrolü"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: app.js syntax kontrol
+        run: node --check app.js
+        working-directory: web/backend
+      - name: Worker syntax kontrol
+        run: node --check workers/eventWorker.js
+        working-directory: web/backend
+
+  redis-integration:
+    name: "2) Redis Entegrasyon Testi"
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Bağımlılıkları yükle
+        run: npm install
+        working-directory: web/backend
+      - name: Redis bağlantı ve cache testi
+        run: npm run test:redis
+        working-directory: web/backend
+        env:
+          REDIS_URL: redis://localhost:6379
+
+  rabbitmq-integration:
+    name: "3) RabbitMQ Entegrasyon Testi"
+    runs-on: ubuntu-latest
+    services:
+      rabbitmq:
+        image: rabbitmq:3-alpine
+        ports:
+          - 5672:5672
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Bağımlılıkları yükle
+        run: npm install
+        working-directory: web/backend
+      - name: RabbitMQ olay yayın testi
+        run: npm run test:rabbitmq
+        working-directory: web/backend
+        env:
+          RABBITMQ_URL: amqp://localhost:5672
+
+  docker-build:
+    name: "4) Docker Image Build"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Docker Buildx kur
+        uses: docker/setup-buildx-action@v3
+      - name: Backend Docker image oluştur
+        uses: docker/build-push-action@v6
+        with:
+          context: ./web/backend
+          push: false
+          tags: 32bitgarage-api:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  web-frontend-build:
+    name: "5) Web Frontend Build"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Frontend bağımlılıkları
+        run: npm ci
+        working-directory: web/frontend
+      - name: Production build
+        run: npm run build
+        working-directory: web/frontend
+        env:
+          CI: false
+
+  mobile-frontend-check:
+    name: "6) Mobil Frontend Kontrolü"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Mobil config ve API client syntax
+        run: |
+          node --check src/constants/config.js
+          node --check src/api/client.js
+        working-directory: mobile/frontend
+
+  ci-summary:
+    name: "7) CI/CD Özet — Tüm Testler"
+    runs-on: ubuntu-latest
+    needs:
+      - backend-syntax
+      - redis-integration
+      - rabbitmq-integration
+      - docker-build
+      - web-frontend-build
+      - mobile-frontend-check
+    steps:
+      - name: Entegrasyonlar başarılı
+        run: |
+          echo "============================================"
+          echo " 32Bit Garage CI/CD — TÜM TESTLER GEÇTİ"
+          echo "============================================"
+          echo " Redis Entegrasyonu    : OK"
+          echo " RabbitMQ Entegrasyonu : OK"
+          echo " Docker Build          : OK"
+          echo " Web Frontend Build    : OK"
+          echo " Mobil Frontend        : OK"
+          echo "============================================"

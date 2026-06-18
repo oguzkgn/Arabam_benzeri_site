@@ -8,7 +8,12 @@
     "start:web-frontend": "npm --prefix web/frontend start",
     "start:mobile-backend": "npm --prefix mobile/backend start",
     "start:mobile-frontend": "npm --prefix mobile/frontend start",
-    "worker:mobile": "npm --prefix mobile/backend run worker"
+    "worker:web": "npm --prefix web/backend run worker",
+    "worker:mobile": "npm --prefix mobile/backend run worker",
+    "test:integration": "npm --prefix web/backend run test:integration",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f api worker"
   },
   "repository": {
     "type": "git",
