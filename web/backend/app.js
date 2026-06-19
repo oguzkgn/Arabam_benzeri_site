@@ -81,8 +81,8 @@ mongoose.connect(MONGO_URI, {
   .then(() => console.log("MongoDB Veritabanına Başarıyla Bağlanıldı!"))
   .catch(err => console.error("MongoDB Bağlantı Hatası:", err));
 
-connectRedis().catch(() => console.warn('[Redis] Başlangıçta bağlanılamadı'));
-connectRabbitMQ().catch(() => console.warn('[RabbitMQ] Başlangıçta bağlanılamadı'));
+connectRedis().catch(() => {});
+connectRabbitMQ().catch(() => {});
 
 function isDbReady() {
   return mongoose.connection.readyState === 1;
@@ -247,7 +247,7 @@ app.get('/api/arabalar', async (req, res) => {
     }
 
     const redis = getRedis();
-    let arabalar = await getCachedListings(redis);
+    let arabalar = redis ? await getCachedListings(redis) : null;
 
     if (!arabalar) {
       arabalar = await Araba.find().sort({ createdAt: -1 }).lean();

@@ -32,6 +32,8 @@
 | `JWT_SECRET` | Oturum anahtarı (zorunlu) |
 | `NODE_ENV` | `production` |
 
+> **Redis ve RabbitMQ Render'da gerekmez.** Bu değişkenleri Render'a ekleme — sadece lokal Docker için kullanılır.
+
 5. **Save Changes**
 6. **Manual Deploy** → **Deploy latest commit**
 

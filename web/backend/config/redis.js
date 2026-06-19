@@ -1,14 +1,21 @@
 const Redis = require('ioredis');
 
-const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
+const isProduction = process.env.NODE_ENV === 'production';
+const REDIS_URL = process.env.REDIS_URL || (!isProduction ? 'redis://localhost:6379' : null);
+const REDIS_ENABLED = Boolean(REDIS_URL);
 
 let redisClient = null;
+let redisDisabledLogged = false;
 
 function getRedis() {
+  if (!REDIS_ENABLED) return null;
+
   if (!redisClient) {
     redisClient = new Redis(REDIS_URL, {
-      maxRetriesPerRequest: 3,
-      lazyConnect: true
+      maxRetriesPerRequest: 1,
+      retryStrategy: () => null,
+      lazyConnect: true,
+      enableOfflineQueue: false
     });
     redisClient.on('error', (err) => {
       console.warn('[Redis] Bağlantı hatası:', err.message);
@@ -18,6 +25,14 @@ function getRedis() {
 }
 
 async function connectRedis() {
+  if (!REDIS_ENABLED) {
+    if (!redisDisabledLogged) {
+      console.log('[Redis] Devre dışı — REDIS_URL tanımlı değil (Render için normal)');
+      redisDisabledLogged = true;
+    }
+    return null;
+  }
+
   const client = getRedis();
   if (client.status === 'wait' || client.status === 'end') {
     await client.connect();
@@ -28,6 +43,7 @@ async function connectRedis() {
 }
 
 async function getRedisStatus() {
+  if (!REDIS_ENABLED) return 'devre_disinda';
   try {
     const client = getRedis();
     if (client.status === 'wait') await client.connect();
@@ -38,4 +54,4 @@ async function getRedisStatus() {
   }
 }
 
-module.exports = { getRedis, connectRedis, getRedisStatus };
+module.exports = { getRedis, connectRedis, getRedisStatus, REDIS_ENABLED };

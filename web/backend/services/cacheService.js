@@ -2,6 +2,7 @@ const CACHE_TTL = Number(process.env.CACHE_TTL_SECONDS || 60);
 const LISTINGS_CACHE_KEY = 'api:listings:all';
 
 async function getCachedListings(redis) {
+  if (!redis) return null;
   try {
     const cached = await redis.get(LISTINGS_CACHE_KEY);
     return cached ? JSON.parse(cached) : null;
@@ -11,6 +12,7 @@ async function getCachedListings(redis) {
 }
 
 async function setCachedListings(redis, listings) {
+  if (!redis) return;
   try {
     await redis.setex(LISTINGS_CACHE_KEY, CACHE_TTL, JSON.stringify(listings));
   } catch (error) {
@@ -19,6 +21,7 @@ async function setCachedListings(redis, listings) {
 }
 
 async function invalidateListingsCache(redis) {
+  if (!redis) return;
   try {
     await redis.del(LISTINGS_CACHE_KEY);
   } catch (error) {
