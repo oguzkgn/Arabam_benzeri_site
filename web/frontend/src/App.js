@@ -42,7 +42,7 @@ function App() {
   const [favoriler, setFavoriler] = useState([]); 
   const [sadeceFavoriler, setSadeceFavoriler] = useState(false); 
 
-  const API_URL = "https://arabam-benzeri-site.onrender.com";
+  const API_URL = process.env.REACT_APP_API_URL || "https://arabam-benzeri-site.onrender.com";
 
   const [authData, setAuthData] = useState({ 
     adSoyad: '', 

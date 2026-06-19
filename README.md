@@ -70,7 +70,14 @@ npm run start:mobile-backend
 
 **Render (API):** Root Directory = `web/backend` · Start = `npm start`
 
-**Vercel (Web):** Root Directory = `web/frontend` · Build = `npm run build`
+**Vercel (Web):**
+
+1. [Vercel Dashboard](https://vercel.com/dashboard) → proje → **Settings** → **General**
+2. **Root Directory** = `web/frontend` (eski `frontend` değil!)
+3. **Save** → **Deployments** → son `main` deploy → **Redeploy**
+4. Canlı adres: **https://32bit-garage.vercel.app/**
+
+> Önizleme URL'leri (`...-oguzkgns-projects.vercel.app`) eski deploy olabilir. Her zaman production domain'i kullanın.
 
 ## Ekip
 
