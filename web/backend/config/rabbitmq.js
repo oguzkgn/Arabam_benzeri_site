@@ -1,7 +1,7 @@
 const amqp = require('amqplib');
 
-const isProduction = process.env.NODE_ENV === 'production';
-const RABBITMQ_URL = process.env.RABBITMQ_URL || (!isProduction ? 'amqp://localhost:5672' : null);
+// Sadece RABBITMQ_URL tanımlıysa aktif — Render'da tanımlama, hata vermez
+const RABBITMQ_URL = process.env.RABBITMQ_URL;
 const RABBITMQ_ENABLED = Boolean(RABBITMQ_URL);
 const EXCHANGE_NAME = '32bitgarage.events';
 

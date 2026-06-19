@@ -86,10 +86,9 @@ npm run start:mobile-backend
 ### Render (API)
 
 1. [Render Dashboard](https://dashboard.render.com/web/srv-d796lltactks73d124bg) → **Settings** → **Build & Deploy**
-2. **Root Directory** = `web/backend` (**`web/frontend` değil!**)
-3. **Start Command** = `npm start`
+2. **Root Directory** = `web/backend`
+3. **Environment** → sadece `MONGO_URI` ve `JWT_SECRET` (NODE_ENV zorunlu değil)
 4. **Manual Deploy** → **Deploy latest commit**
-5. Loglar: [Live Logs](https://dashboard.render.com/web/srv-d796lltactks73d124bg/logs?t=app&r=live)
 
 ## Ekip
 

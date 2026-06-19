@@ -24,15 +24,22 @@
 | **Start Command** | `npm start` |
 | **Health Check Path** | `/api/health` |
 
-4. **Environment** sekmesinde şunlar olmalı:
+4. **Environment** sekmesinde **sadece bunlar zorunlu**:
 
-| Key | Açıklama |
-|-----|----------|
-| `MONGO_URI` | MongoDB bağlantı adresi (zorunlu) |
-| `JWT_SECRET` | Oturum anahtarı (zorunlu) |
-| `NODE_ENV` | `production` |
+| Key | Değer | Zorunlu |
+|-----|-------|---------|
+| `MONGO_URI` | MongoDB bağlantı adresin | ✅ Evet |
+| `JWT_SECRET` | Güçlü rastgele bir anahtar | ✅ Evet |
 
-> **Redis ve RabbitMQ Render'da gerekmez.** Bu değişkenleri Render'a ekleme — sadece lokal Docker için kullanılır.
+> `NODE_ENV` Render'da görünmese de sorun değil — API buna ihtiyaç duymaz.  
+> Render çoğu zaman bunu otomatik ayarlar; elle eklemek istersen: **Add Environment Variable** → Key: `NODE_ENV`, Value: `production`
+
+**Eklemene gerek olmayanlar** (lokal Docker içindir):
+
+| Key | Neden ekleme? |
+|-----|---------------|
+| `REDIS_URL` | Render'da Redis yok — ekleyince hata alırsın |
+| `RABBITMQ_URL` | Render'da RabbitMQ yok |
 
 5. **Save Changes**
 6. **Manual Deploy** → **Deploy latest commit**

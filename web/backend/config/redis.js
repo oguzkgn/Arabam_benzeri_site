@@ -1,7 +1,7 @@
 const Redis = require('ioredis');
 
-const isProduction = process.env.NODE_ENV === 'production';
-const REDIS_URL = process.env.REDIS_URL || (!isProduction ? 'redis://localhost:6379' : null);
+// Sadece REDIS_URL tanımlıysa aktif — Render'da tanımlama, hata vermez
+const REDIS_URL = process.env.REDIS_URL;
 const REDIS_ENABLED = Boolean(REDIS_URL);
 
 let redisClient = null;
