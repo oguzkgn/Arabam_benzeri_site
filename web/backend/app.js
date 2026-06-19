@@ -11,6 +11,7 @@ const bcrypt = require('bcryptjs');
 const Araba = require('./models/Araba');
 const User = require('./models/User');
 const { authMiddleware, signToken } = require('./middleware/auth');
+const { requestLogger, logAuth, logListing } = require('./middleware/requestLogger');
 const { saveUploadedFiles, streamFile, deleteStoredFiles } = require('./services/fileStorage');
 const { getRedis, connectRedis, getRedisStatus } = require('./config/redis');
 const { connectRabbitMQ, getRabbitMQStatus } = require('./config/rabbitmq');
@@ -65,6 +66,7 @@ function deleteUploadFiles(filenames) {
 
 app.use(cors());
 app.use(express.json());
+app.use(requestLogger);
 
 app.get('/uploads/:filename', async (req, res) => {
   await streamFile(req.params.filename, UPLOADS_DIR, res);
@@ -121,11 +123,13 @@ app.post('/api/auth/register', async (req, res) => {
   try {
     const { adSoyad, email, sifre } = req.body;
     if (!adSoyad || !email || !sifre) {
+      logAuth('Kayıt reddedildi — eksik alan', { email });
       return res.status(400).json({ mesaj: 'Tüm alanlar zorunludur.' });
     }
 
     const existing = await User.findOne({ email: email.toLowerCase() });
     if (existing) {
+      logAuth('Kayıt reddedildi — e-posta kayıtlı', { email });
       return res.status(400).json({ mesaj: 'Bu e-posta zaten kayıtlı.' });
     }
 
@@ -138,9 +142,11 @@ app.post('/api/auth/register', async (req, res) => {
     await user.save();
     await emitUserRegistered(user);
 
+    logAuth('Kayıt başarılı', { email, kullaniciId: user._id.toString() });
     res.status(201).json({ mesaj: 'Kayıt başarılı! Şimdi giriş yapabilirsiniz.' });
   } catch (error) {
     console.error('Kayıt Hatası:', error);
+    logAuth('Kayıt hatası', { email: req.body?.email, hata: error.message });
     res.status(400).json({ mesaj: 'Kayıt işlemi başarısız.' });
   }
 });
@@ -149,20 +155,24 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, sifre } = req.body;
     if (!email || !sifre) {
+      logAuth('Giriş reddedildi — eksik alan', { email });
       return res.status(400).json({ mesaj: 'E-posta ve şifre zorunludur.' });
     }
 
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
+      logAuth('Giriş başarısız — kullanıcı bulunamadı', { email });
       return res.status(401).json({ mesaj: 'E-posta veya şifre hatalı.' });
     }
 
     const isMatch = await bcrypt.compare(sifre, user.sifre);
     if (!isMatch) {
+      logAuth('Giriş başarısız — şifre hatalı', { email });
       return res.status(401).json({ mesaj: 'E-posta veya şifre hatalı.' });
     }
 
     const token = signToken(user);
+    logAuth('Giriş başarılı', { email, kullaniciId: user._id.toString() });
     res.status(200).json({
       token,
       kullanici: {
@@ -174,6 +184,7 @@ app.post('/api/auth/login', async (req, res) => {
     });
   } catch (error) {
     console.error('Giriş Hatası:', error);
+    logAuth('Giriş hatası', { email: req.body?.email, hata: error.message });
     res.status(500).json({ mesaj: 'Giriş işlemi başarısız.' });
   }
 });
@@ -199,6 +210,7 @@ app.put('/api/auth/update', authMiddleware, async (req, res) => {
     if (yeniSifre) user.sifre = await bcrypt.hash(yeniSifre, 10);
 
     await user.save();
+    logAuth('Profil güncellendi', { kullaniciId: user._id.toString() });
     res.status(200).json({ mesaj: 'Profil güncellendi. Güvenlik için tekrar giriş yapın.' });
   } catch (error) {
     console.error('Profil Güncelleme Hatası:', error);
@@ -218,6 +230,7 @@ app.delete('/api/auth/delete', authMiddleware, async (req, res) => {
     await Araba.deleteMany({ saticiId: userId });
     await User.findByIdAndDelete(userId);
 
+    logAuth('Hesap silindi', { kullaniciId: userId, silinenIlanSayisi: kullaniciIlanlari.length });
     res.status(200).json({ mesaj: 'Hesabınız ve ilanlarınız silindi.' });
   } catch (error) {
     console.error('Hesap Silme Hatası:', error);
@@ -263,6 +276,7 @@ app.post('/api/arabalar', authMiddleware, upload.array('resimler', 5), async (re
     await invalidateListingsCache(getRedis());
     await emitListingCreated(yeniAraba, req.user.id);
 
+    logListing('İlan eklendi', { ilanId: yeniAraba._id.toString(), kullaniciId: req.user.id, marka: yeniAraba.marka });
     res.status(201).json({ mesaj: "İlan başarıyla eklendi!", ilan: yeniAraba });
   } catch (error) {
     console.error("Kayıt Hatası Detayı:", error);
@@ -289,6 +303,7 @@ app.put('/api/arabalar/:id', authMiddleware, upload.array('resimler', 5), async 
     await invalidateListingsCache(getRedis());
     await emitListingUpdated(araba, req.user.id);
 
+    logListing('İlan güncellendi', { ilanId: araba._id.toString(), kullaniciId: req.user.id });
     res.status(200).json({ mesaj: "İlan başarıyla güncellendi!", ilan: araba });
   } catch (error) {
     console.error("Güncelleme Hatası:", error);
@@ -307,6 +322,7 @@ app.delete('/api/arabalar/:id', authMiddleware, async (req, res) => {
     await invalidateListingsCache(getRedis());
     await emitListingDeleted(req.params.id, req.user.id);
 
+    logListing('İlan silindi', { ilanId: req.params.id, kullaniciId: req.user.id });
     res.status(200).json({ mesaj: "İlan silindi." });
   } catch (error) {
     res.status(400).json({ mesaj: "Silme işlemi başarısız." });
@@ -320,5 +336,6 @@ app.use('/api', (req, res) => {
 const port = process.env.PORT || 5000;
 const host = process.env.HOST || '0.0.0.0';
 app.listen(port, host, () => {
-  console.log(`🚀 Sunucu http://${host}:${port} adresinde çalışıyor!`);
+  console.log(`[BOOT] 32Bit Garage API başlatıldı — http://${host}:${port}`);
+  console.log('[BOOT] Render loglarında [HTTP], [AUTH] ve [ILAN] satırlarını göreceksiniz.');
 });
