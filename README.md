@@ -68,16 +68,28 @@ npm run start:mobile-backend
 
 ## Deploy ayarları
 
-**Render (API):** Root Directory = `web/backend` · Start = `npm start`
+| Platform | Root Directory | Build | Start | Canlı adres |
+|----------|----------------|-------|-------|-------------|
+| **Render (API)** | `web/backend` | `npm install` | `npm start` | https://arabam-benzeri-site.onrender.com |
+| **Vercel (Web)** | `web/frontend` | `npm run build` | otomatik | https://32bit-garage.vercel.app/ |
 
-**Vercel (Web):**
+> **Render'da `web/frontend` kullanma** — bu Vercel içindir. Yanlış ayar giriş/ilan hatalarına ve boş loglara yol açar.  
+> Detaylı Render kurulumu: [RENDER-AYARLARI.md](RENDER-AYARLARI.md)
+
+### Vercel (Web sitesi)
 
 1. [Vercel Dashboard](https://vercel.com/dashboard) → proje → **Settings** → **General**
-2. **Root Directory** = `web/frontend` (eski `frontend` değil!)
-3. **Save** → **Deployments** → son `main` deploy → **Redeploy**
+2. **Root Directory** = `web/frontend`
+3. **Save** → **Deployments** → **Redeploy**
 4. Canlı adres: **https://32bit-garage.vercel.app/**
 
-> Önizleme URL'leri (`...-oguzkgns-projects.vercel.app`) eski deploy olabilir. Her zaman production domain'i kullanın.
+### Render (API)
+
+1. [Render Dashboard](https://dashboard.render.com/web/srv-d796lltactks73d124bg) → **Settings** → **Build & Deploy**
+2. **Root Directory** = `web/backend` (**`web/frontend` değil!**)
+3. **Start Command** = `npm start`
+4. **Manual Deploy** → **Deploy latest commit**
+5. Loglar: [Live Logs](https://dashboard.render.com/web/srv-d796lltactks73d124bg/logs?t=app&r=live)
 
 ## Ekip
 

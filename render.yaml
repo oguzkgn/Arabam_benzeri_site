@@ -1,3 +1,6 @@
+# 32Bit Garage — Render API (web/backend)
+# Vercel icin web/frontend kullanilir — bu dosya SADECE API icindir.
+
 services:
   - type: web
     name: arabam-benzeri-site
