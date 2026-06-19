@@ -1,5 +1,7 @@
 # Oğuz Kağan Arısoy'un Mobil Backend Görevleri
 **Mobil Front-end ile Back-end Bağlanmış Test Videosu:** [Youtube](https://youtu.be/pZxQm-ZtRp8)
+
+
 mobil videosunda görünüyor mobil  front-end ve mobil back-end bağlantısı
 
 
