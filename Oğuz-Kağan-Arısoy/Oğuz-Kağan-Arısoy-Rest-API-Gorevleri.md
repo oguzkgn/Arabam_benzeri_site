@@ -1,7 +1,9 @@
 # Oğuz Kağan Arısoy'un REST API Metotları
 
-**API Test Videosu:** [Link buraya eklenecek](https://youtu.be/pZxQm-ZtRp8)
-//vizede eksik olduğu için mobilde düzelttim video çekmedim vize ile ilgili olduğu için
+**API Test Videosu:** [Link](https://youtu.be/pZxQm-ZtRp8)
+
+
+vizede eksik olduğu için mobilde düzelttim video çekmedim vize ile ilgili olduğu için
 
 ## 1. Üye Olma
 - **Endpoint:** `POST /auth/register`
